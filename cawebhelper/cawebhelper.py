@@ -240,8 +240,6 @@ class CAWebHelper(unittest.TestCase):
             if self.consolelog:
                 print("Não encontrou o campo Módulo")
 
-
-
     def SetItemMen(self, args1='', args2='', args3=''):
         '''
         Método que clica nos itens do menu
@@ -1286,7 +1284,7 @@ class CAWebHelper(unittest.TestCase):
         """
         self.rotina = rotina
         self.SetRotina()
-        #self.wait_browse()
+        self.wait_browse() # Wait to load elements in browser
     
     def UTSetValue(self, cabitem, campo, valor, linha=0, chknewline=False, disabled=False):
         """
@@ -1352,7 +1350,7 @@ class CAWebHelper(unittest.TestCase):
             alias = []
             field = []
 
-            exceptions = ['WT alias', 'WT recno']
+            exceptions = ['wt alias', 'wt recno', 'alias wt', 'recno wt']
             lExcept = False
             auxTable = self.SetTable()
             self.Table = []
@@ -1404,7 +1402,7 @@ class CAWebHelper(unittest.TestCase):
                     else:
                         if alias:
                             for x in exceptions:
-                                if line2 == x:
+                                if line2.lower() == x:
                                     acertos.append(line2)
                                     lExcept = True
                                     break
@@ -2057,10 +2055,11 @@ class CAWebHelper(unittest.TestCase):
         Método que efetua o clique na aba
         ''' 
         self.rota = "ClickFolder"
+
+        self.wait_enchoice()
+
         if self.close_element:
             self.move_element(self.close_element) # Retira o ToolTip dos elementos focados.
-        self.wait_enchoice()
-        #self.advpl = False
         if self.VldData():
             try:#Tento pegar o elemento da aba de forma direta sem webscraping
                 element = self.driver.find_element_by_link_text(item)
