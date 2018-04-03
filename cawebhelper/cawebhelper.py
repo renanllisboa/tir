@@ -2117,6 +2117,7 @@ class CAWebHelper(unittest.TestCase):
         Método responsável por alterar os parâmetros do configurador antes de iniciar um caso de teste.
         '''
         self.idwizard = []
+        self.LastIdBtn = []
         self.LogOff()
 
         #self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
