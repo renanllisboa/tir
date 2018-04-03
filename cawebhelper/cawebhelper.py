@@ -1166,8 +1166,9 @@ class CAWebHelper(unittest.TestCase):
             time.sleep(2)
             self.DoubleClick(element2)
             time.sleep(1)
-            self.DoubleClick(element)
-            self.SendKeys(element, Keys.BACK_SPACE)
+            #self.DoubleClick(element)
+            elem = element.find_elements(By.TAG_NAME, 'input')[0]
+            self.SendKeys(elem, Keys.BACK_SPACE)
             return True
 
     def wait_until_clickable(self, element):
@@ -1189,9 +1190,7 @@ class CAWebHelper(unittest.TestCase):
             else:
                 self.driver.save_screenshot( self.GetFunction() +".png")
                 self.log_error("Falhou")
-                self.Restart()
                 
-
     # VISAO 3 - Tela inicial
     def ProgramaInicial(self, initial_program="", environment=""):
         self.set_prog_inic(initial_program)
@@ -1718,10 +1717,14 @@ class CAWebHelper(unittest.TestCase):
 
     def SendKeys(self, element, args):
         try:
+            element.send_keys("")
+            element.click()
             element.send_keys(args)
         except Exception:
             actions = ActionChains(self.driver)
             actions.move_to_element(element)
+            actions.send_keys("")
+            actions.click()
             actions.send_keys(args)
             actions.perform()
 
