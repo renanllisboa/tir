@@ -310,7 +310,7 @@ class CAWebHelper(unittest.TestCase):
 
     def set_enchoice(self, campo='', valor='', cClass='', args='', visibility='', Id='', disabled=False, tries=100):
         '''
-         Method that fills the enchoice.
+        Method that fills the enchoice.
         '''
         if tries == 10:
             self.numberOfTries = 0
@@ -371,10 +371,11 @@ class CAWebHelper(unittest.TestCase):
                         #         self.SendKeys(element, Keys.ENTER)
                         # """
                         if tam_valorusr < tam_interface:
-                            if self.valtype == 'N':
-                                self.SendKeys(element, Keys.ENTER)
-                            else:
-                           		self.SendKeys(element, Keys.TAB)
+                            self.SendKeys(element, Keys.ENTER)
+                            # if self.valtype == 'N':
+                            #     self.SendKeys(element, Keys.ENTER)
+                            # else:                                
+                           	# 	self.SendKeys(element, Keys.TAB)
                 except Exception as error:
                     if self.consolelog:
                         print(error)
@@ -1153,7 +1154,24 @@ class CAWebHelper(unittest.TestCase):
             pass
 
     def placeHolder(self, placeholder='', chave=''):
-        Id = self.SetScrap('placeHolder', 'div', 'tget', args2=placeholder)
+
+        content = self.driver.page_source
+        soup = BeautifulSoup(content,"html.parser")
+       
+        browse_input = ""
+        if(self.element_exists(By.CSS_SELECTOR, ".ui-dialog")):
+            browse_input = soup.select(".ui-dialog input")[0]
+        else:
+            first_elem = list(filter(lambda x: x.text == self.language.other_actions, soup.select("button")))[0]
+            
+            while(True):
+                first_elem = first_elem.parent
+                if first_elem.select("input"):
+                    browse_input = first_elem.select("input")[0]
+                    break
+    
+        Id = browse_input.parent.attrs["id"]
+
         if Id:
             element = self.driver.find_element_by_id(Id)
             self.Click(element)
@@ -1718,10 +1736,14 @@ class CAWebHelper(unittest.TestCase):
 
     def SendKeys(self, element, args):
         try:
+            element.send_keys("")
+            element.click()
             element.send_keys(args)
         except Exception:
             actions = ActionChains(self.driver)
             actions.move_to_element(element)
+            actions.send_keys("")
+            actions.click()
             actions.send_keys(args)
             actions.perform()
 
