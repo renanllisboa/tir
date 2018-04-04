@@ -89,7 +89,12 @@ class CAWebHelper(unittest.TestCase):
         self.log.station = socket.gethostname()
         jq.inject_jquery(self.driver)
 
-    def set_prog_inic(self, initial_program='SIGAADV'):
+        self.camposCache = []
+        self.parametro = ''
+        self.backupSetup = dict()
+
+
+    def set_prog_inic(self, initial_program='SIGAADV')        
         '''
         Method that defines the program to be started
         '''
@@ -1233,6 +1238,15 @@ class CAWebHelper(unittest.TestCase):
             self.config.language = self.SetScrap("language", "html")
             self.language = LanguagePack(self.config.language)
         
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+        if not self.backupSetup:
+            self.backupSetup = { 'progini': self.config.initialprog, 'data': self.config.date, 'grupo': self.config.group, 'filial': self.config.branch }
+
+=======
+>>>>>>> master
+>>>>>>> ce24da55017d7f07f6b2c5f3ee18869c01068018
         self.ProgramaInicial(initial_program)
 
         self.Usuario()
@@ -2069,6 +2083,118 @@ class CAWebHelper(unittest.TestCase):
                             self.Click(elements_list[index])
                             time.sleep(1)
                             self.SendKeys(elements_list[index], Keys.ENTER)
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+    def SetParameters( self, arrayParameters ):
+        '''
+        Método responsável por alterar os parâmetros do configurador antes de iniciar um caso de teste.
+        '''
+        self.idwizard = []
+        self.LastIdBtn = []
+        self.LogOff()
+
+        self.Setup("SIGACFG", self.config.date, self.config.group, self.config.branch)
+
+        # Escolhe a opção do Menu Lateral
+        self.SetLateralMenu("Ambiente > Cadastros > Parâmetros")
+
+        # Clica no botão/icone pesquisar
+        self.SetButton("Pesquisar")
+
+        array = arrayParameters
+        # Criado uma cópia do vetor, e definido o mesmo como estático
+        backup_idwizard = self.idwizard[:]
+
+        for arrayLine in array:
+
+            # Preenche o campo de Pesquisa
+            self.UTSetValue("aCab", "Procurar por:", arrayLine[0])
+
+            # Confirma a busca
+            self.SetButton("Buscar")
+
+            # Clica no botão/icone Editar
+            self.SetButton("Editar")
+
+            # Faz a captura dos elementos dos campos
+            time.sleep(5)
+            content = self.driver.page_source
+            soup = BeautifulSoup(content,"html.parser")
+
+            menuCampos = { 'Procurar por:': arrayLine[0], 'Filial': '', 'Cont. Por': '', 'Cont. Ing':'', 'Cont. Esp':'' }
+
+            for line in menuCampos:
+                if not menuCampos[line]:
+                    RetId = self.cainput( line, soup, 'div', '', 'Enchoice', 'label', 0, '', 60 )
+                    cache = self.get_web_value(RetId)
+                    self.lencache = len(cache)
+                    cache = cache.strip()
+                    menuCampos[line] = cache
+
+            self.camposCache.append( menuCampos )
+            self.idwizard = backup_idwizard[:]
+
+            # Altero os parametros
+            self.UTSetValue("aCab", "Filial", arrayLine[1])
+            self.UTSetValue("aCab", "Cont. Por", arrayLine[2])
+            self.UTSetValue("aCab", "Cont. Ing", arrayLine[3])
+            self.UTSetValue("aCab", "Cont. Esp", arrayLine[4])
+
+            # Confirma a gravação de Edição
+            self.SetButton("Salvar")
+            self.idwizard = backup_idwizard[:]
+        self.LogOff()
+
+        self.LastIdBtn = []
+        self.Setup( self.backupSetup['progini'], self.backupSetup['data'], self.backupSetup['grupo'], self.backupSetup['filial'])
+        self.UTProgram(self.rotina)
+
+    def RestoreParameters( self ):
+        '''
+        Método responsável por restaurar os parâmetros do configurador após o encerramento do/dos caso(s) de teste(s).
+        Método deve ser executado quando for alterado os parametros do configurador, utilizando o método SetParameters()
+        '''
+        self.idwizard = []
+        self.LastIdBtn = []
+        self.LogOff()
+
+        self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
+        
+        # Escolhe a opção do Menu Lateral
+        self.SetLateralMenu("Ambiente > Cadastros > Parâmetros")
+
+        # Clica no botão/icone pesquisar
+        self.SetButton("Pesquisar")
+
+        backup_idwizard = self.idwizard[:]
+
+        for line in self.camposCache:
+            # Preenche o campo de Pesquisa
+            self.UTSetValue("aCab", "Procurar por:", line['Procurar por:'])
+
+            # Confirma a busca
+            self.SetButton("Buscar")
+
+            # Clica no botão/icone Editar
+            self.SetButton("Editar")
+
+            #self.idwizard = backup_idwizard[:]
+
+            self.UTSetValue("aCab", 'Cont. Por', line['Cont. Por'])
+            self.UTSetValue("aCab", 'Cont. Ing', line['Cont. Ing'])
+            self.UTSetValue("aCab", 'Cont. Esp', line['Cont. Esp'])
+                
+            # Confirma a gravação de Edição
+            self.SetButton("Salvar")
+            self.idwizard = backup_idwizard[:]
+        
+        self.LastIdBtn = []
+                            
+=======
+>>>>>>> master
+>>>>>>> ce24da55017d7f07f6b2c5f3ee18869c01068018
 
     def close_modal(self):
         '''
@@ -2114,6 +2240,11 @@ class CAWebHelper(unittest.TestCase):
             self.log.new_line(False, message)
         self.log.save_file()
         self.assertTrue(False, message)
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> ce24da55017d7f07f6b2c5f3ee18869c01068018
 
     def SetFocus(self, field):
         """
@@ -2121,3 +2252,7 @@ class CAWebHelper(unittest.TestCase):
         """
         Id = self.SetScrap(field, 'div', 'tget', 'Enchoice')
         jq.set_focus(self.driver, "#{} input".format(Id))
+<<<<<<< HEAD
+=======
+>>>>>>> master
+>>>>>>> ce24da55017d7f07f6b2c5f3ee18869c01068018
