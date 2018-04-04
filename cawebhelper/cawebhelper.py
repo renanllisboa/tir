@@ -1237,18 +1237,9 @@ class CAWebHelper(unittest.TestCase):
             self.config.language = self.SetScrap("language", "html")
             self.language = LanguagePack(self.config.language)
         
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
         if not self.backupSetup:
             self.backupSetup = { 'progini': self.config.initialprog, 'data': self.config.date, 'grupo': self.config.group, 'filial': self.config.branch }
 
-=======
->>>>>>> master
->>>>>>> ce24da55017d7f07f6b2c5f3ee18869c01068018
->>>>>>> 967589076a15c49105bde7cef21ec0b098d797f0
         self.ProgramaInicial(initial_program)
 
         self.Usuario()
