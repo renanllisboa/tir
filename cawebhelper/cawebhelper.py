@@ -1237,6 +1237,7 @@ class CAWebHelper(unittest.TestCase):
         """
         self.rotina = rotina
         self.SetRotina()
+        self.wait_browse() # Wait to load elements in browser
     
     def UTSetValue(self, cabitem, campo, valor, linha=0, chknewline=False, disabled=False):
         """
@@ -2084,7 +2085,7 @@ class CAWebHelper(unittest.TestCase):
         self.SetButton("Pesquisar")
 
         array = arrayParameters
-        # Criado uma cópia di vetor, e definido o mesmo como estático
+        # Criado uma cópia do vetor, e definido o mesmo como estático
         backup_idwizard = self.idwizard[:]
 
         for arrayLine in array:
