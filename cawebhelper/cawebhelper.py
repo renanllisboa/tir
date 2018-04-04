@@ -2196,8 +2196,7 @@ class CAWebHelper(unittest.TestCase):
                 
             # Confirma a gravação de Edição
             self.SetButton("Salvar")
-            self.idwizard = backup_idwizard[:]
-                            
+            self.idwizard = backup_idwizard[:]                            
 
     def close_modal(self):
         '''
