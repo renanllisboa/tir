@@ -2067,9 +2067,9 @@ class CAWebHelper(unittest.TestCase):
         Método responsável por alterar os parâmetros do configurador antes de iniciar um caso de teste.
         '''
         self.idwizard = []
+        self.LastIdBtn = []
         self.LogOff()
 
-        #self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
         self.Setup("SIGACFG", self.config.date, self.config.group, self.config.branch)
 
         # Escolhe a opção do Menu Lateral
@@ -2079,7 +2079,7 @@ class CAWebHelper(unittest.TestCase):
         self.SetButton("Pesquisar")
 
         array = arrayParameters
-
+        # Criado uma cópia di vetor, e definido o mesmo como estático
         backup_idwizard = self.idwizard[:]
 
         for arrayLine in array:
@@ -2122,6 +2122,7 @@ class CAWebHelper(unittest.TestCase):
             self.idwizard = backup_idwizard[:]
         self.LogOff()
 
+        self.LastIdBtn = []
         self.Setup( self.backupSetup['progini'], self.backupSetup['data'], self.backupSetup['grupo'], self.backupSetup['filial'])
         self.UTProgram(self.rotina)
 
@@ -2131,6 +2132,7 @@ class CAWebHelper(unittest.TestCase):
         Método deve ser executado quando for alterado os parametros do configurador, utilizando o método SetParameters()
         '''
         self.idwizard = []
+        self.LastIdBtn = []
         self.LogOff()
 
         self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
@@ -2162,6 +2164,8 @@ class CAWebHelper(unittest.TestCase):
             # Confirma a gravação de Edição
             self.SetButton("Salvar")
             self.idwizard = backup_idwizard[:]
+        
+        self.LastIdBtn = []
                             
 
     def close_modal(self):
