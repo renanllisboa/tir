@@ -93,7 +93,7 @@ class CAWebHelper(unittest.TestCase):
         self.parametro = ''
         self.backupSetup = dict()
 
-    def set_prog_inic(self, initial_program='SIGAADV')
+    def set_prog_inic(self, initial_program='SIGAADV'):
         '''
         Method that defines the program to be started
         '''
