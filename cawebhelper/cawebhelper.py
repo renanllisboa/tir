@@ -240,8 +240,6 @@ class CAWebHelper(unittest.TestCase):
             if self.consolelog:
                 print("Não encontrou o campo Módulo")
 
-
-
     def SetItemMen(self, args1='', args2='', args3=''):
         '''
         Método que clica nos itens do menu
@@ -1191,8 +1189,9 @@ class CAWebHelper(unittest.TestCase):
             time.sleep(2)
             self.DoubleClick(element2)
             time.sleep(1)
-            self.DoubleClick(element)
-            self.SendKeys(element, Keys.BACK_SPACE)
+            #self.DoubleClick(element)
+            elem = element.find_elements(By.TAG_NAME, 'input')[0]
+            self.SendKeys(elem, Keys.BACK_SPACE)
             return True
 
     def wait_until_clickable(self, element):
@@ -1214,9 +1213,7 @@ class CAWebHelper(unittest.TestCase):
             else:
                 self.driver.save_screenshot( self.GetFunction() +".png")
                 self.log_error("Falhou")
-                self.Restart()
                 
-
     # VISAO 3 - Tela inicial
     def ProgramaInicial(self, initial_program="", environment=""):
         self.set_prog_inic(initial_program)
@@ -1462,10 +1459,10 @@ class CAWebHelper(unittest.TestCase):
 
             '''
             # Se a celula nao estiver posicionada onde a variavel 'coluna' esta indicando
-            if self.lastColweb != str(coluna):
-                print('Posicionando na coluna %s' %str(coluna))
+            if self.lastColweb != str(coluna):
+                print('Posicionando na coluna %s' %str(coluna))
                 # return true fara com que entre novamente aqui( cawait ) e tente focar na celula que a variavel 'coluna' esta indicando
-                return True
+                return True
             # A celula esta posicionada conforme a variavel 'coluna' indicou !
             else:
             '''
@@ -2058,10 +2055,11 @@ class CAWebHelper(unittest.TestCase):
         Método que efetua o clique na aba
         ''' 
         self.rota = "ClickFolder"
+
+        self.wait_enchoice()
+
         if self.close_element:
             self.move_element(self.close_element) # Retira o ToolTip dos elementos focados.
-        self.wait_enchoice()
-        #self.advpl = False
         if self.VldData():
             try:#Tento pegar o elemento da aba de forma direta sem webscraping
                 element = self.driver.find_element_by_link_text(item)
@@ -2117,7 +2115,6 @@ class CAWebHelper(unittest.TestCase):
         Método responsável por alterar os parâmetros do configurador antes de iniciar um caso de teste.
         '''
         self.idwizard = []
-        self.LastIdBtn = []
         self.LogOff()
 
         #self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
