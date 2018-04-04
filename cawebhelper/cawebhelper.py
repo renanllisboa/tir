@@ -282,6 +282,8 @@ class CAWebHelper(unittest.TestCase):
     def wait_browse(self,searchMsg=True):
         Ret = ''
         endTime =   time.time() + 60
+        if self.initial_program == 'SIGACFG':
+            Ret = True
         while not Ret:
             Ret = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice')
             if time.time() > endTime:
@@ -1915,6 +1917,8 @@ class CAWebHelper(unittest.TestCase):
                     else:
                         Id = self.SetScrap(button, tag, cClass, args1, '', '', '', args3, searchMsg)
                         if not Id:
+                            Id = self.SetScrap(button, tag, cClass, '', '', '', '', args3, searchMsg)
+                        if not Id:
                             Id = self.SetScrap(self.language.other_actions, tag, cClass, args1,'', '', '', args3,searchMsg)
                             element = self.driver.find_element_by_id(Id)
                             self.Click(element)
@@ -2150,7 +2154,7 @@ class CAWebHelper(unittest.TestCase):
         self.LastIdBtn = []
         self.LogOff()
 
-        self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
+        self.Setup("SIGACFG", self.config.date, self.config.group, self.config.branch)
         
         # Escolhe a opção do Menu Lateral
         self.SetLateralMenu("Ambiente > Cadastros > Parâmetros")
