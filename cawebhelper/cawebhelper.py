@@ -91,7 +91,6 @@ class CAWebHelper(unittest.TestCase):
         self.parametro = ''
         self.backupSetup = dict()
 
-
     def set_prog_inic(self, initial_program):
         '''
         Method that defines the program to be started
@@ -314,10 +313,8 @@ class CAWebHelper(unittest.TestCase):
             self.numberOfTries = 0
             if self.elementDisabled and self.consolelog:
             	print("Element is Disabled")
-            self.LogResult(field=campo, user_value=disabled, captured_value=True, disabled_field=True)
-            self.log.save_file()
-            self.Restart()
-            self.assertTrue(False, self.create_message(['', campo],enum.MessageType.DISABLED))
+            if not disabled:
+                self.log_error(self.create_message(['', campo],enum.MessageType.DISABLED))
         else:
             tries += 1
             self.rota = "SetEnchoice"
@@ -1312,8 +1309,8 @@ class CAWebHelper(unittest.TestCase):
         Ret = self.wait_browse(False)
         if Ret:
             ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('q').key_up(Keys.CONTROL).perform()
-            self.SetButton(self.language.finish,searchMsg=False)
-    
+            self.SetButton(self.language.finish,searchMsg=False)               
+
     def TearDown(self):
         """
         Finaliza o browser
@@ -1585,7 +1582,7 @@ class CAWebHelper(unittest.TestCase):
             self.elementDisabled = self.driver.find_element_by_xpath("//div[@id='%s']/input" %Id).get_attribute('disabled') != None
         return valorweb       
 
-    def LogResult(self, field, user_value, captured_value, call_grid=False, disabled_field=False):
+    def LogResult(self, field, user_value, captured_value, call_grid=False):
         '''
         Log the result of comparison between user value and captured value
         '''
@@ -1594,11 +1591,7 @@ class CAWebHelper(unittest.TestCase):
         if call_grid:
             txtaux = 'Item: %s - ' %str(self.lineGrid + 1)
 
-        if disabled_field and not user_value:
-            message = self.create_message([txtaux, field], enum.MessageType.DISABLED)
-        elif disabled_field and user_value:
-            message = self.create_message([txtaux, field], enum.MessageType.DISABLED)
-        elif user_value != captured_value and not disabled_field:
+        if user_value != captured_value:
             message = self.create_message([txtaux, field, user_value, captured_value], enum.MessageType.INCORRECT)
         
         self.validate_field(field, user_value, captured_value, message)
@@ -1643,7 +1636,8 @@ class CAWebHelper(unittest.TestCase):
         self.assert_result(False)
 
     def Restart(self):
-        self.LogOff()
+        self.driver.refresh()
+        self.driver.switch_to_alert().accept()
         self.ProgramaInicial()
         self.classe = ''
         self.Usuario()
@@ -1801,8 +1795,6 @@ class CAWebHelper(unittest.TestCase):
                 if text in element.text:
                     return True
             return False
-
-
         
     def SetLateralMenu(self, menuitens):
         '''
@@ -1980,14 +1972,11 @@ class CAWebHelper(unittest.TestCase):
         except ValueError as error:
             if self.consolelog:
                 print(error)
-            self.Restart()
-            self.assertTrue(False, "Campo %s não encontrado" %error.args[0])
+            self.log_error("Campo %s não encontrado" %error.args[0])
         except Exception as error:
             if self.consolelog:
                 print(error)
-            self.Restart()
-            self.assertTrue(False) 
-
+            self.log_error(error)
 
     def SetFilial(self, filial):
         """
@@ -2207,8 +2196,7 @@ class CAWebHelper(unittest.TestCase):
                 
             # Confirma a gravação de Edição
             self.SetButton("Salvar")
-            self.idwizard = backup_idwizard[:]
-                            
+            self.idwizard = backup_idwizard[:]                            
 
     def close_modal(self):
         '''
@@ -2250,10 +2238,15 @@ class CAWebHelper(unittest.TestCase):
         """
         Finishes execution of test case with an error and creates the log information for that test.
         """
+        stack = list(map(lambda x: x.function, filter(lambda x: re.search('test_', x.function),inspect.stack())))[0].split("CT")[1]
+        log_message = ""
+        log_message += stack + " -" + message
+        
         if new_log_line:
-            self.log.new_line(False, message)
+            self.log.new_line(False, log_message)
         self.log.save_file()
-        self.assertTrue(False, message)
+        self.Restart()
+        self.assertTrue(False, log_message)
 
     def SetFocus(self, field):
         """
