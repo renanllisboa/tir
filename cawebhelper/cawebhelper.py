@@ -358,7 +358,6 @@ class CAWebHelper(unittest.TestCase):
                             valor = valsub
                         elif (self.valtype == "N"):
                             tries = 0
-                            selector = "#{} input".format(Id) 
                             while(tries < 3):
                                 self.focus(element)
                                 self.Click(element)
@@ -1892,7 +1891,7 @@ class CAWebHelper(unittest.TestCase):
 
         self.SetButton(self.language.close)
 
-    def SetButton(self, button, args1='wait', args2='', args3=10, tag='div', cClass='tbrowsebutton',searchMsg = True):
+    def SetButton(self, button, args1='wait', args2='', args3=45, tag='div', cClass='tbrowsebutton',searchMsg = True):
         '''
         Método que efetua o clique nos botão da interface
         '''
@@ -1918,6 +1917,7 @@ class CAWebHelper(unittest.TestCase):
                     if Id:
                         if button == self.language.confirm or button == self.language.save:
                             self.savebtn = button
+                            self.idwizard = []
                         if Id == 'button-ok':
                             element = self.driver.find_element_by_class_name(Id)
                         else:
