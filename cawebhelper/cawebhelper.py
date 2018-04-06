@@ -841,7 +841,7 @@ class CAWebHelper(unittest.TestCase):
                                     next_ = line.find_next_siblings('div')
                                     for x in next_:
                                         if x.attrs['class'][0] == 'tget' or x.attrs['class'][0] == 'tcombobox':
-                                            if len(x.attrs['class']) > 3:
+                                            if len(x.attrs['class']) > 3 and not self.SearchStack('UTCheckResult'):
                                                 if x.attrs['class'][3] == 'disabled':
                                                     continue
                                             print(seek)
@@ -1523,7 +1523,12 @@ class CAWebHelper(unittest.TestCase):
         valorweb = ''
         if not Id:
             if cabitem == 'aCab':
-                Id = self.SetScrap(campo, 'div', 'tget', 'Enchoice')
+                underline = (r'\w+(_)')#Se o campo conter "_"
+                match = re.search(underline, campo)
+                if match:
+                    Id = self.SetScrap(campo, 'div', 'tget', 'Enchoice')
+                else:
+                    Id = self.SetScrap(campo, 'div', 'tget', 'Enchoice', 'label')
             elif cabitem == 'Virtual':
                 Id = self.SetScrap(campo, 'div', 'tsay', 'Virtual')
             elif cabitem == 'help':
@@ -1736,7 +1741,7 @@ class CAWebHelper(unittest.TestCase):
         except Exception:
             actions = ActionChains(self.driver)
             actions.move_to_element(element)
-            actions.send_keys(" ")
+            actions.send_keys("")
             actions.click()
             actions.send_keys(args)
             actions.perform()
