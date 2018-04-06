@@ -280,6 +280,9 @@ class CAWebHelper(unittest.TestCase):
         Ret = ''
         endTime =   time.time() + 60
 
+        if self.initial_program == 'SIGACFG':
+            Ret = True
+        
         while not Ret:
             Ret = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice')
             if time.time() > endTime:
