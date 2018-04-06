@@ -277,7 +277,11 @@ class CAWebHelper(unittest.TestCase):
    
     def wait_browse(self,searchMsg=True):
         Ret = ''
-        endTime =   time.time() + 90
+        endTime =   time.time() + 60
+
+        if self.initial_program == 'SIGACFG':
+            Ret = True
+        
         while not Ret:
             Ret = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice')
             if time.time() > endTime:
@@ -1937,6 +1941,8 @@ class CAWebHelper(unittest.TestCase):
                     else:
                         Id = self.SetScrap(button, tag, cClass, args1, '', '', '', args3, searchMsg)
                         if not Id:
+                            Id = self.SetScrap(button, tag, cClass, '', '', '', '', args3, searchMsg)
+                        if not Id:
                             Id = self.SetScrap(self.language.other_actions, tag, cClass, args1,'', '', '', args3,searchMsg)
                             element = self.driver.find_element_by_id(Id)
                             self.Click(element)
@@ -2103,9 +2109,9 @@ class CAWebHelper(unittest.TestCase):
         Método responsável por alterar os parâmetros do configurador antes de iniciar um caso de teste.
         '''
         self.idwizard = []
+        self.LastIdBtn = []
         self.LogOff()
 
-        #self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
         self.Setup("SIGACFG", self.config.date, self.config.group, self.config.branch)
 
         # Escolhe a opção do Menu Lateral
@@ -2115,11 +2121,11 @@ class CAWebHelper(unittest.TestCase):
         self.SetButton("Pesquisar")
 
         array = arrayParameters
-
+        
+        # Criado uma cópia do vetor, e definido o mesmo como estático
         backup_idwizard = self.idwizard[:]
 
         for arrayLine in array:
-
             # Preenche o campo de Pesquisa
             self.UTSetValue("aCab", "Procurar por:", arrayLine[0])
 
@@ -2158,6 +2164,7 @@ class CAWebHelper(unittest.TestCase):
             self.idwizard = backup_idwizard[:]
         self.LogOff()
 
+        self.LastIdBtn = []
         self.Setup( self.backupSetup['progini'], self.backupSetup['data'], self.backupSetup['grupo'], self.backupSetup['filial'])
         self.UTProgram(self.rotina)
 
@@ -2167,9 +2174,10 @@ class CAWebHelper(unittest.TestCase):
         Método deve ser executado quando for alterado os parametros do configurador, utilizando o método SetParameters()
         '''
         self.idwizard = []
+        self.LastIdBtn = []
         self.LogOff()
 
-        self.Setup("SIGACFG", "10/08/2017", "T1", "D MG 01")
+        self.Setup("SIGACFG", self.config.date, self.config.group, self.config.branch)
         
         # Escolhe a opção do Menu Lateral
         self.SetLateralMenu("Ambiente > Cadastros > Parâmetros")
@@ -2190,14 +2198,17 @@ class CAWebHelper(unittest.TestCase):
             self.SetButton("Editar")
 
             #self.idwizard = backup_idwizard[:]
-
+            
+            self.UTSetValue("aCab", 'Filial', line['Filial'])
             self.UTSetValue("aCab", 'Cont. Por', line['Cont. Por'])
             self.UTSetValue("aCab", 'Cont. Ing', line['Cont. Ing'])
             self.UTSetValue("aCab", 'Cont. Esp', line['Cont. Esp'])
                 
             # Confirma a gravação de Edição
             self.SetButton("Salvar")
-            self.idwizard = backup_idwizard[:]                            
+            self.idwizard = backup_idwizard[:]
+        
+        self.LastIdBtn = []
 
     def close_modal(self):
         '''
