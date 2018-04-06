@@ -2173,7 +2173,8 @@ class CAWebHelper(unittest.TestCase):
             self.SetButton("Editar")
 
             #self.idwizard = backup_idwizard[:]
-
+            
+            self.UTSetValue("aCab", 'Filial', line['Filial'])
             self.UTSetValue("aCab", 'Cont. Por', line['Cont. Por'])
             self.UTSetValue("aCab", 'Cont. Ing', line['Cont. Ing'])
             self.UTSetValue("aCab", 'Cont. Esp', line['Cont. Esp'])
