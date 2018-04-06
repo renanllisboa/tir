@@ -358,7 +358,6 @@ class CAWebHelper(unittest.TestCase):
                             valor = valsub
                         elif (self.valtype == "N"):
                             tries = 0
-                            selector = "#{} input".format(Id) 
                             while(tries < 3):
                                 self.focus(element)
                                 self.Click(element)
@@ -1743,7 +1742,7 @@ class CAWebHelper(unittest.TestCase):
         except Exception:
             actions = ActionChains(self.driver)
             actions.move_to_element(element)
-            actions.send_keys("")
+            actions.send_keys(" ")
             actions.click()
             actions.send_keys(args)
             actions.perform()
@@ -1946,6 +1945,7 @@ class CAWebHelper(unittest.TestCase):
                     if Id:
                         if button == self.language.confirm or button == self.language.save:
                             self.savebtn = button
+                            self.idwizard = []
                         if Id == 'button-ok':
                             element = self.driver.find_element_by_class_name(Id)
                         else:
