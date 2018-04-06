@@ -1612,6 +1612,8 @@ class CAWebHelper(unittest.TestCase):
         self.assert_result(False)
 
     def Restart(self):
+        self.LastIdBtn = []
+        self.idwizard = []
         self.LogOff()
         self.ProgramaInicial()
         self.classe = ''
