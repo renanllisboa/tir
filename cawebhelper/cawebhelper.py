@@ -91,7 +91,8 @@ class CAWebHelper(unittest.TestCase):
         self.parametro = ''
         self.backupSetup = dict()
 
-    def set_prog_inic(self, initial_program='SIGAADV'):
+
+    def set_prog_inic(self, initial_program):
         '''
         Method that defines the program to be started
         '''
@@ -237,8 +238,6 @@ class CAWebHelper(unittest.TestCase):
             if self.consolelog:
                 print("Não encontrou o campo Módulo")
 
-
-
     def SetItemMen(self, args1='', args2='', args3=''):
         '''
         Método que clica nos itens do menu
@@ -280,8 +279,7 @@ class CAWebHelper(unittest.TestCase):
     def wait_browse(self,searchMsg=True):
         Ret = ''
         endTime =   time.time() + 60
-        if self.initial_program == 'SIGACFG':
-            Ret = True
+
         while not Ret:
             Ret = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice')
             if time.time() > endTime:
@@ -720,7 +718,7 @@ class CAWebHelper(unittest.TestCase):
         try: # Encontra o botão via nome da imagem
             if not tooltipID or tooltipID[1]:
                 lista = soup.find_all(tag, class_=('tbutton'))
-                menuItens = {self.language.copy: 's4wb005n.png',self.language.cut: 's4wb006n.png',self.language.paste: 's4wb007n.png',self.language.calculator: 's4wb008n.png',self.language.spool: 's4wb010n.png',self.language.ajuda: 's4wb016n.png',self.language.exit: 'final.png',self.language.search: 's4wb011n.png', self.language.folders: 'folder5.png', self.language.generate_differential_file: 'relatorio.png',self.language.add: 'bmpincluir.png', self.language.view: 'bmpvisual.png','Editar': 'editable.png',self.language.delete: 'excluir.png',self.language.filter: 'filtro.png'}
+                menuItens = {self.language.copy: 's4wb005n.png',self.language.cut: 's4wb006n.png',self.language.paste: 's4wb007n.png',self.language.calculator: 's4wb008n.png',self.language.spool: 's4wb010n.png',self.language.help: 's4wb016n.png',self.language.exit: 'final.png',self.language.search: 's4wb011n.png', self.language.folders: 'folder5.png', self.language.generate_differential_file: 'relatorio.png',self.language.include: 'bmpincluir.png', self.language.visualizar: 'bmpvisual.png',self.language.editar: 'editable.png',self.language.delete: 'excluir.png',self.language.filter: 'filtro.png'}
                 button = menuItens[seek]
 
                 for line in lista:
@@ -1025,6 +1023,7 @@ class CAWebHelper(unittest.TestCase):
         RetId = ''
         self.idcomp = ''
         element = ''
+        Id = ''
 
         if args2 == 'detail':
             if args1 == 'indicedefault':
@@ -1042,10 +1041,13 @@ class CAWebHelper(unittest.TestCase):
                     if seek in line.text:
                         Id = line.attrs['id']
                         break
+                if not Id:
+                    self.log_error("Não foi encontrado o indice informado: {}".format(seek))
+                    self.Restart()
         else:
             if args2:
                 lista = self.search_next_soup(args2, soup)
-            else:  
+            else:
                 lista = soup.find_all('div', class_=(cClass))
 
             #Coleto o Id do campo pesquisa correspondente
@@ -1155,10 +1157,12 @@ class CAWebHelper(unittest.TestCase):
             Id = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice', placeholder)
             if Id:
                 element = self.driver.find_element_by_xpath("//div[@id='%s']/button" %Id)
+                return_wait = self.wait_until_clickable(element)
                 if self.rota == 'SetRotina' or self.rota == 'EDAPP':
                     self.SetScrap(self.language.view, 'div', 'tbrowsebutton', 'wait', '', '', '', 10)
                     self.rota = ''
-                self.Click(element)
+                if not return_wait:
+                    self.Click(element)
                 #seleciona a busca do indice baseado na descrição ex: Filial+numero
                 if indice:
                     self.SetScrap(descricao, 'div', 'tradiobutton', 'indice', 'detail')
@@ -1179,6 +1183,7 @@ class CAWebHelper(unittest.TestCase):
             time.sleep(1)
             self.Click(element)
             time.sleep(1)
+            self.SendKeys(element, Keys.ENTER)
             element2 = self.driver.find_element_by_xpath("//div[@id='%s']/img" %Id)
             time.sleep(2)
             self.DoubleClick(element2)
@@ -1186,6 +1191,28 @@ class CAWebHelper(unittest.TestCase):
             self.DoubleClick(element)
             self.SendKeys(element, Keys.BACK_SPACE)
             return True
+
+    def wait_until_clickable(self, element):
+        """
+        Wait until element to be clickable
+        """
+        endtime =   time.time() + 120# 2 minutos de espera
+
+        if self.consolelog:
+            print("Waiting...")
+        while True:
+            if time.time() < endtime:
+                try:
+                    element.click()
+                    return True
+                except:
+                    pass
+                    time.sleep(3)
+            else:
+                self.driver.save_screenshot( self.GetFunction() +".png")
+                self.log_error("Falhou")
+                self.Restart()
+                
 
     # VISAO 3 - Tela inicial
     def ProgramaInicial(self, initial_program="", environment=""):
@@ -1248,6 +1275,7 @@ class CAWebHelper(unittest.TestCase):
         while(not self.element_exists(By.CSS_SELECTOR, ".tmenu")):
             self.close_modal()
 
+        
         self.set_log_info()
 
     def UTProgram(self, rotina):
@@ -1322,7 +1350,7 @@ class CAWebHelper(unittest.TestCase):
             alias = []
             field = []
 
-            exceptions = ['WT alias', 'WT recno']
+            exceptions = ['wt alias', 'wt recno', 'alias wt', 'recno wt']
             lExcept = False
             auxTable = self.SetTable()
             self.Table = []
@@ -1374,7 +1402,7 @@ class CAWebHelper(unittest.TestCase):
                     else:
                         if alias:
                             for x in exceptions:
-                                if line2 == x:
+                                if line2.lower() == x:
                                     acertos.append(line2)
                                     lExcept = True
                                     break
@@ -1716,10 +1744,14 @@ class CAWebHelper(unittest.TestCase):
 
     def SendKeys(self, element, args):
         try:
+            element.send_keys("")
+            element.click()
             element.send_keys(args)
         except Exception:
             actions = ActionChains(self.driver)
             actions.move_to_element(element)
+            actions.send_keys("")
+            actions.click()
             actions.send_keys(args)
             actions.perform()
 
@@ -2025,10 +2057,11 @@ class CAWebHelper(unittest.TestCase):
         Método que efetua o clique na aba
         ''' 
         self.rota = "ClickFolder"
+
+        self.wait_enchoice()
+
         if self.close_element:
             self.move_element(self.close_element) # Retira o ToolTip dos elementos focados.
-        self.wait_enchoice()
-        #self.advpl = False
         if self.VldData():
             try:#Tento pegar o elemento da aba de forma direta sem webscraping
                 element = self.driver.find_element_by_link_text(item)
@@ -2184,7 +2217,7 @@ class CAWebHelper(unittest.TestCase):
             self.idwizard = backup_idwizard[:]
         
         self.LastIdBtn = []
-                            
+
     def close_modal(self):
         '''
         This method closes the last open modal in the screen.
