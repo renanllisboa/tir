@@ -2096,11 +2096,11 @@ class CAWebHelper(unittest.TestCase):
         self.SetButton("Pesquisar")
 
         array = arrayParameters
+        
         # Criado uma cópia do vetor, e definido o mesmo como estático
         backup_idwizard = self.idwizard[:]
 
         for arrayLine in array:
-
             # Preenche o campo de Pesquisa
             self.UTSetValue("aCab", "Procurar por:", arrayLine[0])
 
