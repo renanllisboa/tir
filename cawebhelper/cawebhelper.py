@@ -1635,8 +1635,9 @@ class CAWebHelper(unittest.TestCase):
 
     def Restart(self):
         self.LastIdBtn = []
+        self.idwizard = []
         self.driver.refresh()
-        self.driver.switch_to_alert().accept()
+        self.driver.switch_to_alert().accept()  
         self.ProgramaInicial()
         self.classe = ''
         self.Usuario()
