@@ -280,6 +280,7 @@ class CAWebHelper(unittest.TestCase):
         Ret = ''
         endTime =   time.time() + 60
 
+        # Tratamento provisorio. Efetuando tratamento para demais rotinas que não tenha browser.
         if self.initial_program == 'SIGACFG':
             Ret = True
         
@@ -2159,7 +2160,11 @@ class CAWebHelper(unittest.TestCase):
                     cache = self.get_web_value(RetId)
                     self.lencache = len(cache)
                     cache = cache.strip()
-                    menuCampos[line] = cache
+
+                    if cache == '': # Se o valor contido dentro do campo for vazio, inserir 3 backspace
+                        menuCampos[line] = '   '
+                    else: # Caso contrario, inserir o próprio valor
+                        menuCampos[line] = cache
 
             self.camposCache.append( menuCampos )
             self.idwizard = backup_idwizard[:]
@@ -2207,8 +2212,6 @@ class CAWebHelper(unittest.TestCase):
 
             # Clica no botão/icone Editar
             self.SetButton("Editar")
-
-            #self.idwizard = backup_idwizard[:]
             
             self.UTSetValue("aCab", 'Filial', line['Filial'])
             self.UTSetValue("aCab", 'Cont. Por', line['Cont. Por'])
