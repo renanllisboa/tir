@@ -362,7 +362,7 @@ class CAWebHelper(unittest.TestCase):
                             self.SendKeys(element, valsub)
                             valor = valsub
                         elif (self.valtype == "N"):
-                            tries = 0
+                            tries = 0 
                             while(tries < 3):
                                 self.focus(element)
                                 self.Click(element)
@@ -2228,7 +2228,7 @@ class CAWebHelper(unittest.TestCase):
         """
         Checks wether the element has a numeric mask.
         """
-        reg = (r"(@. )?[1-9.\/-]+")
+        reg = (r"^[1-9.\/-:]+|(@. )[1-9.\/-:]+")
         mask = element.get_attribute("picture")
         if mask is None:
             child = element.find_elements(By.CSS_SELECTOR, "input")
