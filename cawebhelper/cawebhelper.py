@@ -312,7 +312,7 @@ class CAWebHelper(unittest.TestCase):
 
     def set_enchoice(self, campo='', valor='', cClass='', args='', visibility='', Id='', disabled=False, tries=100):
         '''
-         Method that fills the enchoice.
+        Method that fills the enchoice.
         '''
         if tries == 10:
             self.numberOfTries = 0
@@ -375,10 +375,11 @@ class CAWebHelper(unittest.TestCase):
                             self.SendKeys(element, valor)
 
                         if tam_valorusr < tam_interface:
-                            if self.valtype == 'N':
-                                self.SendKeys(element, Keys.ENTER)
-                            else:
-                           		self.SendKeys(element, Keys.TAB)
+                            self.SendKeys(element, Keys.ENTER)
+                            # if self.valtype == 'N':
+                            #     self.SendKeys(element, Keys.ENTER)
+                            # else:                                
+                           	# 	self.SendKeys(element, Keys.TAB)
                 except Exception as error:
                     if self.consolelog:
                         print(error)
@@ -1169,27 +1170,53 @@ class CAWebHelper(unittest.TestCase):
             pass
 
     def placeHolder(self, placeholder='', chave=''):
-        Id = self.SetScrap('placeHolder', 'div', 'tget', args2=placeholder)
+
+        content = self.driver.page_source
+        soup = BeautifulSoup(content,"html.parser")
+       
+        browse_input = ""
+        first_elem = ""
+        if(self.element_exists(By.CSS_SELECTOR, ".ui-dialog")):
+            first_elem = list(filter(lambda x: x.text == self.language.branches, soup.select(".ui-dialog span")))[0]
+        else:
+            first_elem = list(filter(lambda x: x.text == self.language.other_actions, soup.select("button")))[0]
+            
+        while(True):
+            first_elem = first_elem.parent
+            if first_elem.select("input"):
+                browse_input = first_elem.select("input")[0]
+                break
+    
+        Id = browse_input.parent.attrs["id"]
+
         if Id:
             element = self.driver.find_element_by_id(Id)
-            self.Click(element)
-            self.SendKeys(element, chave)
-            time.sleep(1)
-            self.Click(element)
-            time.sleep(1)
-            self.SendKeys(element, Keys.ENTER)
-            element2 = self.driver.find_element_by_xpath("//div[@id='%s']/img" %Id)
-            time.sleep(2)
-            self.DoubleClick(element2)
-            time.sleep(1)
-            #self.DoubleClick(element)
-            elem = element.find_elements(By.TAG_NAME, 'input')[0]
-            self.SendKeys(elem, Keys.BACK_SPACE)
+            input_element = element.find_element_by_tag_name("input")
+            
+            self.focus(element)
+            self.SendKeys(input_element, chave)
+            self.SendKeys(input_element, Keys.ENTER)
+            
+            search = element.find_element_by_tag_name("img")
+            self.Click(search)
+            time.sleep(2)    
+
+            tries = 0
+            while(tries < 3):
+                self.focus(element)
+                self.DoubleClick(element)
+                self.SendKeys(element, Keys.BACK_SPACE)
+
+                current_value = input_element.get_attribute("value")
+                if (self.apply_mask(current_value).strip() == self.language.search):
+                    break
+                tries+=1
+
             return True
 
     def wait_until_clickable(self, element):
         """
-        Wait until element to be clickable
+        Wait until element is clickable
         """
         endtime =   time.time() + 120# 2 minutos de espera
 
