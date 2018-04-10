@@ -1977,7 +1977,7 @@ class CAWebHelper(unittest.TestCase):
                             if Id:
                                 self.SetItemMen(button, '', 'menuitem')
                     if Id:
-                        if button == self.language.confirm or button == self.language.save:
+                        if button in self.language.no_actions:
                             self.savebtn = button
                             self.idwizard = []
                         if Id == 'button-ok':
