@@ -1969,8 +1969,6 @@ class CAWebHelper(unittest.TestCase):
                     else:
                         Id = self.SetScrap(button, tag, cClass, args1, '', '', '', args3, searchMsg)
                         if not Id:
-                            Id = self.SetScrap(button, tag, cClass, '', '', '', '', args3, searchMsg)
-                        if not Id:
                             Id = self.SetScrap(self.language.other_actions, tag, cClass, args1,'', '', '', args3,searchMsg)
                             element = self.driver.find_element_by_id(Id)
                             self.Click(element)
