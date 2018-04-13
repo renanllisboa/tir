@@ -43,6 +43,7 @@ class LanguagePack:
         self.filter = languagepack['Filter']
         self.menu_about = languagepack["Menu About"]
         self.branches =  languagepack["Branches"]
+        self.ajuda = languagepack['Ajuda']
 
         self.error_log = languagepack["Error Log"]
         self.error_log_print = languagepack["Error Log Print"]
@@ -94,7 +95,8 @@ class LanguagePack:
             "Help": "Help:",
             "Problem": "Problem:",
             "Solution": "Solution:",
-            "Branches": "Branches"
+            "Branches": "Branches",
+            "Ajuda": "Help"
         }
 
         brazilian_portuguese = {
@@ -138,7 +140,8 @@ class LanguagePack:
             "Help": "Ajuda:",
             "Problem": "Problema:",
             "Solution": "Solução:",
-            "Branches": "Filiais"
+            "Branches": "Filiais",
+            "Ajuda":"Ajuda"
         }
         russian = {
             "User": "Пользователь",
@@ -186,7 +189,8 @@ class LanguagePack:
             #"Help": "Помощь:",
             "Problem": "Проблема:",
             "Solution": "Решение:",
-            "Branches": ""
+            "Branches": "",
+            "Ajuda": "Help"
         }
 
         if language.lower() == "en-us": 
