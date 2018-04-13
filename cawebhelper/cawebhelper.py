@@ -710,22 +710,23 @@ class CAWebHelper(unittest.TestCase):
 
         tooltipID = soup.find_all('div', text=seek)
 
-        if not tooltipID or tooltipID[1]:
-            lista = soup.find_all(tag, class_=('tbutton'))
-            menuItens = {self.language.copy: 's4wb005n.png',self.language.cut: 's4wb006n.png',self.language.paste: 's4wb007n.png',self.language.calculator: 's4wb008n.png',self.language.spool: 's4wb010n.png',self.language.help: 's4wb016n.png',self.language.exit: 'final.png',self.language.search: 's4wb011n.png', self.language.folders: 'folder5.png', self.language.generate_differential_file: 'relatorio.png',self.language.include: 'bmpincluir.png', self.language.visualizar: 'bmpvisual.png',self.language.editar: 'editable.png',self.language.delete: 'excluir.png',self.language.filter: 'filtro.png'}
-            button = menuItens[seek]
+        try:
+            if not tooltipID or tooltipID[1]:
+                lista = soup.find_all(tag, class_=('tbutton'))
+                menuItens = {self.language.copy: 's4wb005n.png',self.language.cut: 's4wb006n.png',self.language.paste: 's4wb007n.png',self.language.calculator: 's4wb008n.png',self.language.spool: 's4wb010n.png',self.language.ajuda: 's4wb016n.png',self.language.exit: 'final.png',self.language.search: 's4wb011n.png', self.language.folders: 'folder5.png', self.language.generate_differential_file: 'relatorio.png',self.language.include: 'bmpincluir.png', self.language.visualizar: 'bmpvisual.png',self.language.editar: 'editable.png',self.language.delete: 'excluir.png',self.language.filter: 'filtro.png'}
+                button = menuItens[seek]
 
-            for line in lista:
-                try:
-                    if button in line.contents[1]['style']:
-                        tooltip = line.attrs['id'][4:8]
-                        break
-                except:
-                    pass
-        
-        if not tooltip:# Encontra o botão via Tooltip
-            if tooltipID[0].text == seek:
-                tooltip = tooltipID[0].attrs['id'][8:12]
+                for line in lista:
+                    try:
+                        if button in line.contents[1]['style']:
+                            tooltip = line.attrs['id'][4:8]
+                            break
+                    except:
+                        pass
+        except:
+            if not tooltip:# Encontra o botão via Tooltip
+                if tooltipID[0].text == seek:
+                    tooltip = tooltipID[0].attrs['id'][7:12]
         
         return(tooltip)
 

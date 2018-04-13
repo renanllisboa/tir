@@ -42,6 +42,7 @@ class LanguagePack:
         self.include = languagepack['Include']
         self.filter = languagepack['Filter']
         self.menu_about = languagepack["Menu About"]
+        self.ajuda = languagepack['Ajuda']
 
         self.error_log = languagepack["Error Log"]
         self.error_log_print = languagepack["Error Log Print"]
@@ -92,7 +93,8 @@ class LanguagePack:
             "Error Msg Required": "This action could not be completed.There are mandatory fields not field.CloseCancel - ",
             "Help": "Help:",
             "Problem": "Problem:",
-            "Solution": "Solution:"
+            "Solution": "Solution:",
+            "Ajuda": "Help"
         }
 
         brazilian_portuguese = {
@@ -135,7 +137,8 @@ class LanguagePack:
             "Error Msg Required": "Não é possível completar a ação.Existem campos obrigatórios não preenchidos.FecharCancelar - ",
             "Help": "Ajuda:",
             "Problem": "Problema:",
-            "Solution": "Solução:"
+            "Solution": "Solução:",
+            "Ajuda":"Ajuda"
         }
         russian = {
             "User": "Пользователь",
@@ -182,7 +185,8 @@ class LanguagePack:
             "Error Msg Required": "Не удалось завершить это действие.Не заполнены обязательные поля.Закрытьотменить - ",
             #"Help": "Помощь:",
             "Problem": "Проблема:",
-            "Solution": "Решение:"
+            "Solution": "Решение:",
+            "Ajuda": "Help"
         }
 
         if language.lower() == "en-us": 
