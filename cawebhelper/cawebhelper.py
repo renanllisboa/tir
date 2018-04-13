@@ -319,10 +319,8 @@ class CAWebHelper(unittest.TestCase):
             self.numberOfTries = 0
             if self.elementDisabled and self.consolelog:
             	print("Element is Disabled")
-            self.LogResult(field=campo, user_value=disabled, captured_value=True, disabled_field=True)
-            self.log.save_file()
-            self.Restart()
-            self.assertTrue(False, self.create_message(['', campo],enum.MessageType.DISABLED))
+            if not disabled:
+                self.log_error(self.create_message(['', campo],enum.MessageType.DISABLED))
         else:
             tries += 1
             self.rota = "SetEnchoice"
@@ -366,7 +364,6 @@ class CAWebHelper(unittest.TestCase):
                             valor = valsub
                         elif (self.valtype == "N"):
                             tries = 0
-                            selector = "#{} input".format(Id) 
                             while(tries < 3):
                                 self.focus(element)
                                 self.Click(element)
@@ -378,12 +375,6 @@ class CAWebHelper(unittest.TestCase):
                         else:
                             self.SendKeys(element, valor)
 
-						# """childPresence = self.children_exists(element, By.CSS_SELECTOR, "img[src*=fwskin_icon_lookup]") TODO verificar tratamento do campo com consulta padrão.
-                        # if self.classe == "tget" and childPresence:
-                        #     for x in range(0, 3):i
-                        #         self.Click(element)
-                        #         self.SendKeys(element, Keys.ENTER)
-                        # """
                         if tam_valorusr < tam_interface:
                             if self.valtype == 'N':
                                 self.SendKeys(element, Keys.ENTER)
@@ -1318,8 +1309,8 @@ class CAWebHelper(unittest.TestCase):
         Ret = self.wait_browse(False)
         if Ret:
             ActionChains(self.driver).key_down(Keys.CONTROL).send_keys('q').key_up(Keys.CONTROL).perform()
-            self.SetButton(self.language.finish,searchMsg=False)
-    
+            self.SetButton(self.language.finish,searchMsg=False)               
+
     def TearDown(self):
         """
         Finaliza o browser
@@ -1591,7 +1582,7 @@ class CAWebHelper(unittest.TestCase):
             self.elementDisabled = self.driver.find_element_by_xpath("//div[@id='%s']/input" %Id).get_attribute('disabled') != None
         return valorweb       
 
-    def LogResult(self, field, user_value, captured_value, call_grid=False, disabled_field=False):
+    def LogResult(self, field, user_value, captured_value, call_grid=False):
         '''
         Log the result of comparison between user value and captured value
         '''
@@ -1600,11 +1591,7 @@ class CAWebHelper(unittest.TestCase):
         if call_grid:
             txtaux = 'Item: %s - ' %str(self.lineGrid + 1)
 
-        if disabled_field and not user_value:
-            message = self.create_message([txtaux, field], enum.MessageType.DISABLED)
-        elif disabled_field and user_value:
-            message = self.create_message([txtaux, field], enum.MessageType.DISABLED)
-        elif user_value != captured_value and not disabled_field:
+        if user_value != captured_value:
             message = self.create_message([txtaux, field, user_value, captured_value], enum.MessageType.INCORRECT)
         
         self.validate_field(field, user_value, captured_value, message)
@@ -1649,7 +1636,9 @@ class CAWebHelper(unittest.TestCase):
         self.assert_result(False)
 
     def Restart(self):
-        self.LogOff()
+        self.LastIdBtn = []
+        self.driver.refresh()
+        self.driver.switch_to_alert().accept()
         self.ProgramaInicial()
         self.classe = ''
         self.Usuario()
@@ -1807,8 +1796,6 @@ class CAWebHelper(unittest.TestCase):
                 if text in element.text:
                     return True
             return False
-
-
         
     def SetLateralMenu(self, menuitens):
         '''
@@ -1988,14 +1975,11 @@ class CAWebHelper(unittest.TestCase):
         except ValueError as error:
             if self.consolelog:
                 print(error)
-            self.Restart()
-            self.assertTrue(False, "Campo %s não encontrado" %error.args[0])
+            self.log_error("Campo %s não encontrado" %error.args[0])
         except Exception as error:
             if self.consolelog:
                 print(error)
-            self.Restart()
-            self.assertTrue(False) 
-
+            self.log_error(str(error))
 
     def SetFilial(self, filial):
         """
@@ -2264,10 +2248,71 @@ class CAWebHelper(unittest.TestCase):
         """
         Finishes execution of test case with an error and creates the log information for that test.
         """
+
+        stack = list(map(lambda x: x.function, filter(lambda x: re.search('test_', x.function),inspect.stack())))[0].split("test_")[1].split("_CT")[1]
+        log_message = ""
+        log_message += stack + " -" + message
+                
         if new_log_line:
-            self.log.new_line(False, message)
+            self.log.new_line(False, log_message)
         self.log.save_file()
-        self.assertTrue(False, message)
+        self.Restart()
+        self.assertTrue(False, log_message)
+
+    def SetKey(self, key):
+        """
+        Press the desired key on the keyboard on the focused element.
+        Supported keys: F1 to F12, Up, Down and Delete
+        """
+        supported_keys = {
+            "F1" : Keys.F1,
+            "F2" : Keys.F2,
+            "F3" : Keys.F3,
+            "F4" : Keys.F4,
+            "F5" : Keys.F5,
+            "F6" : Keys.F6,
+            "F7" : Keys.F7,
+            "F8" : Keys.F8,
+            "F9" : Keys.F9,
+            "F10" : Keys.F10,
+            "F11" : Keys.F11,
+            "F12" : Keys.F12,
+            "UP" : Keys.UP,
+            "DOWN" : Keys.DOWN,
+            "DELETE" : Keys.DELETE
+        }
+
+        #JavaScript function to return focused element if DIV or Input OR empty
+
+        script = """
+        var getActiveElement = () => { 
+	        if(document.activeElement.tagName.toLowerCase() == "input" || document.activeElement.tagName.toLowerCase() == "div"){
+		        if(document.activeElement.attributes["id"]){
+			        return document.activeElement.attributes["id"].value
+		        }else if(document.activeElement.parentElement.attributes["id"]){
+			        return document.activeElement.parentElement.attributes["id"].value
+		        }
+            }
+	        return ""
+        }
+
+        return getActiveElement()
+        """
+
+        try:
+            Id = self.driver.execute_script(script)
+            if Id:
+                element = self.driver.find_element_by_id(Id)
+            else:
+                element = self.driver.find_element(By.TAG_NAME, "html")
+            
+            if key.upper() in supported_keys:
+                self.SendKeys(element, supported_keys[key.upper()])
+            else:
+                self.log_error("Key is not supported")
+
+        except Exception as error:
+            self.log_error(str(error))
 
     def SetFocus(self, field):
         """
