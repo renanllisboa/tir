@@ -1198,7 +1198,7 @@ class CAWebHelper(unittest.TestCase):
             input_element = element.find_element_by_tag_name("input")
             
             self.focus(element)
-            self.SendKeys(input_element, chave)
+            self.SendKeys(input_element, chave.strip())
             self.SendKeys(input_element, Keys.ENTER)
             
             search = element.find_element_by_tag_name("img")
