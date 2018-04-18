@@ -2062,7 +2062,7 @@ class CAWebHelper(unittest.TestCase):
         Método que efetua o clique na aba
         ''' 
         self.rota = "ClickFolder"
-        self.btnenchoice = ''
+        self.btnenchoice = True
         self.wait_enchoice()
         time.sleep(2)
         if self.close_element:
