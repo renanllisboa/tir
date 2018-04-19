@@ -2293,23 +2293,21 @@ class CAWebHelper(unittest.TestCase):
         return getActiveElement()
         """
 
-        try:
-            if self.VldData():            
-                Id = self.driver.execute_script(script)
-                if Id:
-                    element = self.driver.find_element_by_id(Id)
+        try: 
+            Id = self.driver.execute_script(script)
+            if Id:
+                element = self.driver.find_element_by_id(Id)
+            else:
+                element = self.driver.find_element(By.TAG_NAME, "html")
+            
+            if key.upper() in supported_keys:
+                if key.upper() == "DOWN":
+                    self.UTSetValue('aItens','newline','0')
                 else:
-                    element = self.driver.find_element(By.TAG_NAME, "html")
-                
-                if key.upper() in supported_keys:
                     self.focus(element)
-                    if key.upper() == "DOWN":
-                        ActionChains(self.driver).key_down(Keys.DOWN).perform()
-                        self.UTAddLine()
-                    else:
-                        self.SendKeys(element, supported_keys[key.upper()])
-                else:
-                    self.log_error("Key is not supported")
+                    self.SendKeys(element, supported_keys[key.upper()])
+            else:
+                self.log_error("Key is not supported")
 
         except Exception as error:
             self.log_error(str(error))
