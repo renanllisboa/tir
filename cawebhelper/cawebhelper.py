@@ -442,13 +442,14 @@ class CAWebHelper(unittest.TestCase):
                 
             if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
                 self.lineGrid += 1
+                self.down_grid()  
                 time.sleep(3)
             else:
                 coluna = self.Table[1].index(campo)
                 if self.consolelog:
                     print('Posicionando no campo %s' %campo)
                 # controla se a celula esta posicionada onde a variavel 'coluna' esta indicando e se a celula foi preenchida com o conteúdo da variavel 'valor'.
-                while self.cawait(coluna, campo, valor, element(), ChkResult):
+                while self.cawait(coluna, campo, valor, element, ChkResult):
                     Id = self.SetScrap('', 'div', self.cClass, 'setGrid')
                     if Id:
                         # nao estava posicionado na celula correta então tenta novamente e volta para a funcao cawait()
@@ -1467,10 +1468,10 @@ class CAWebHelper(unittest.TestCase):
                         # O campo numérico esta vazio ?
                         if valorweb != valor:
                             # preencha o campo numerico
-                            self.SendKeys(element, Keys.ENTER)#element.send_keys(Keys.ENTER)
+                            self.SendKeys(element(), Keys.ENTER)#element.send_keys(Keys.ENTER)
                             time.sleep(1)
-                            self.SendKeys(element, valsub)#element.send_keys(valor)
-                            self.SendKeys(element, Keys.ENTER)#element.send_keys(Keys.ENTER)
+                            self.SendKeys(element(), valsub)#element.send_keys(valor)
+                            self.SendKeys(element(), Keys.ENTER)#element.send_keys(Keys.ENTER)
 
                             # return true fara com que entre novamente aqui( cawait ) para garantir que os dados foram preenchidos corretamente.
                             return True
@@ -1482,7 +1483,7 @@ class CAWebHelper(unittest.TestCase):
                     elif valorweb != valor.strip():
                         #preencha campo
                         #clique enter na célula
-                        self.DoubleClick(element)#self.SendKeys(element, Keys.ENTER)
+                        self.DoubleClick(element())#self.SendKeys(element, Keys.ENTER)
                         #Campo caractere
                         Id = self.SetScrap(campo,'div','tget', args1='caSeek')
                         #Se for combobox na grid
@@ -1494,19 +1495,19 @@ class CAWebHelper(unittest.TestCase):
                                     return False
                         if Id:
                             self.lenvalorweb = len(self.get_web_value(Id))
-                            element = self.driver.find_element_by_id(Id)
+                            element_ = self.driver.find_element_by_id(Id)
                             
-                            if element.tag_name == 'div':
-                                element = element.find_element_by_tag_name("input")
+                            if element_.tag_name == 'div':
+                                element_ = element_.find_element_by_tag_name("input")
 
                             time.sleep(1)
-                            self.Click(element)
-                            if valsub != valor and self.check_mask(element):
-                                self.SendKeys(element, valsub)
+                            self.Click(element_)
+                            if valsub != valor and self.check_mask(element_):
+                                self.SendKeys(element_, valsub)
                             else:
-                                self.SendKeys(element, valor)
+                                self.SendKeys(element_, valor)
                             if len(valor) < self.lenvalorweb:
-                                self.SendKeys(element, Keys.ENTER)
+                                self.SendKeys(element_, Keys.ENTER)
                         # return true fara com que entre novamente aqui( cawait ) para garantir que os dados foram preenchidos corretamente.
                         return True
                     else:
@@ -2333,3 +2334,6 @@ class CAWebHelper(unittest.TestCase):
 
         script = "window.focus; elem = document.querySelector('"+ selector +"'); elem.focus(); elem.click()"
         self.driver.execute_script(script)
+
+    def down_grid(self):
+        ActionChains(self.driver).key_down(Keys.DOWN).perform()
