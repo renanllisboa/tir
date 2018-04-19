@@ -35024,6 +35024,7 @@ CRJ_DCODAG;C;220;Descr. Agen.;
 CRL_FILIAL;C;8;Filial      ;
 CRL_ID    ;C;6;ID          ;
 CRL_VERSAO;C;14;Id. Ver. Reg;
+CRL_SEQUENCIAL;C;8;Sequencial;
 CRL_INIINT;C;4;Ini Interv  ;
 CRL_FIMINT;C;4;Fim Interv  ;
 CRL_TPINTE;C;1;Tp Intervalo;
