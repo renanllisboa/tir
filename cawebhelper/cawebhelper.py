@@ -2320,12 +2320,13 @@ class CAWebHelper(unittest.TestCase):
                 
                 if key.upper() in supported_keys:
                     self.focus(element)
-                    self.SendKeys(element, supported_keys[key.upper()])
+                    if key.upper() == "DOWN":
+                        ActionChains(self.driver).key_down(Keys.DOWN).perform() 
+                        self.UTAddLine()
+                    else:
+                        self.SendKeys(element, supported_keys[key.upper()])
                 else:
                     self.log_error("Key is not supported")
-
-                if key.upper() == "DOWN":
-                    self.UTAddLine()
 
         except Exception as error:
             self.log_error(str(error))
