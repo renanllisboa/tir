@@ -1177,7 +1177,7 @@ class CAWebHelper(unittest.TestCase):
             pass
 
     def placeHolder(self, placeholder='', chave=''):
-
+        time.sleep(2)
         content = self.driver.page_source
         soup = BeautifulSoup(content,"html.parser")
        
@@ -1489,7 +1489,7 @@ class CAWebHelper(unittest.TestCase):
             if self.SearchStack('GetValue'):
                 self.grid_value = valorweb
                 return False # return false encerra o laço
-                       
+
             valsub = self.apply_mask(valor)
             if self.lastColweb != coluna:
                 return True
