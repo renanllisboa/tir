@@ -1518,7 +1518,8 @@ class CAWebHelper(unittest.TestCase):
                     elif valorweb != valor.strip():
                         #preencha campo
                         #clique enter na célula
-                        self.DoubleClick(element())#self.SendKeys(element, Keys.ENTER)
+                        #self.DoubleClick(element())#self.SendKeys(element, Keys.ENTER)
+                        self.enter_grid()
                         #Campo caractere
                         Id = self.SetScrap(campo,'div','tget', args1='caSeek')
                         #Se for combobox na grid
@@ -2372,3 +2373,6 @@ class CAWebHelper(unittest.TestCase):
 
     def down_grid(self):
         ActionChains(self.driver).key_down(Keys.DOWN).perform()
+    
+    def enter_grid(self):
+        ActionChains(self.driver).key_down(Keys.ENTER).perform()
