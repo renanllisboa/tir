@@ -412,8 +412,10 @@ class CAWebHelper(unittest.TestCase):
             if valor == x.text[0:len(valor)]:
                 valor = x.text
                 break
-        if not self.elementDisabled:       
+        if not self.elementDisabled:
+            time.sleep(2)       
             combo.select_by_visible_text(valor)
+            time.sleep(2)
         return valor
 
     def SetGrid(self, ChkResult=0):
