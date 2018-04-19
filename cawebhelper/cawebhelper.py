@@ -446,8 +446,8 @@ class CAWebHelper(unittest.TestCase):
                     element = element[0]
 
                 if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
-                    element = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'tmodaldialog.twidget')))
-                    self.SendKeys(element, Keys.DOWN)#element.send_keys(Keys.DOWN)
+                    #element = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'tmodaldialog.twidget')))
+                    #self.SendKeys(element, Keys.DOWN)#element.send_keys(Keys.DOWN)
                     self.lineGrid += 1
                     time.sleep(3)
                 else:
@@ -2311,19 +2311,21 @@ class CAWebHelper(unittest.TestCase):
         """
 
         try:
-            Id = self.driver.execute_script(script)
-            if Id:
-                element = self.driver.find_element_by_id(Id)
-            else:
-                element = self.driver.find_element(By.TAG_NAME, "html")
-            
-            if key.upper() in supported_keys:
-                self.SendKeys(element, supported_keys[key.upper()])
-            else:
-                self.log_error("Key is not supported")
+            if self.VldData():            
+                Id = self.driver.execute_script(script)
+                if Id:
+                    element = self.driver.find_element_by_id(Id)
+                else:
+                    element = self.driver.find_element(By.TAG_NAME, "html")
+                
+                if key.upper() in supported_keys:
+                    self.focus(element)
+                    self.SendKeys(element, supported_keys[key.upper()])
+                else:
+                    self.log_error("Key is not supported")
 
-            if key.upper() == "DOWN":
-                self.UTAddLine()
+                if key.upper() == "DOWN":
+                    self.UTAddLine()
 
         except Exception as error:
             self.log_error(str(error))
