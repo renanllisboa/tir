@@ -441,7 +441,7 @@ class CAWebHelper(unittest.TestCase):
                 self.log_error("Celula não encontrada!")
                 
             if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
-                self.lineGrid += 1
+                self.lineGrid = td.get_attribute("id")
                 self.down_grid()  
                 time.sleep(3)
             else:
@@ -453,14 +453,15 @@ class CAWebHelper(unittest.TestCase):
                     Id = self.SetScrap('', 'div', self.cClass, 'setGrid')
                     if Id:
                         # nao estava posicionado na celula correta então tenta novamente e volta para a funcao cawait()
-                        if self.advpl:
-                            element_table = self.driver.find_element_by_xpath("//div[@id='%s']/div[1]/table/tbody/tr[@id=%s]/td[@id=%s]" % ( str(Id), str(self.lineGrid), str(coluna) ) )
-                        else:
-                            element_table = self.driver.find_element_by_xpath("//div[@id='%s']/div/table/tbody/tr[@id=%s]/td[@id=%s]/div" % ( str(Id), str(self.lineGrid), str(coluna) ) )
-                            #//div[@id='COMP8015']/div/table/tbody/tr/td[3]/div
+                        time.sleep(2)
+                        itens = self.driver.find_elements(By.CSS_SELECTOR, ".selected-row")
+                        for line in itens:
+                            if line.is_displayed():
+                                td = line
+                                break                
+                        element_table = td.find_element(By.CSS_SELECTOR, ".selected-cell")
                         self.lastColweb = coluna
                         time.sleep(1)
-                        self.wait.until(EC.element_to_be_clickable((By.ID, Id)))
                         self.Click(element_table)
         # Neste momento devo limpar a lista gridcpousr, pois ja utilizei os seus dados.
         self.gridcpousr = []
@@ -1484,6 +1485,7 @@ class CAWebHelper(unittest.TestCase):
                         #preencha campo
                         #clique enter na célula
                         #self.DoubleClick(element())#self.SendKeys(element, Keys.ENTER)
+                        time.sleep(3)
                         self.enter_grid()
                         #Campo caractere
                         Id = self.SetScrap(campo,'div','tget', args1='caSeek')
