@@ -416,64 +416,56 @@ class CAWebHelper(unittest.TestCase):
             if valor == x.text[0:len(valor)]:
                 valor = x.text
                 break
-        if not self.elementDisabled:       
+        if not self.elementDisabled:
+            time.sleep(2)       
             combo.select_by_visible_text(valor)
+            time.sleep(2)
         return valor
 
     def SetGrid(self, ChkResult=0):
         """
         Preenche a grid baseado nas listas self.gridcpousr e self.Table
         """
-        Ret = ''
-        self.btnenchoice = True
-        Ret = self.wait_enchoice()#Aguardo o carregamento dos componentes da enchoice.
+        self.wait_enchoice() #Aguardo o carregamento dos componentes da enchoice.
         self.rota = "SetGrid"
         if self.fillTable():    # Se self.Table estiver preenchido com campos da tabela que o usuario quer testar, não deve executar SearchField() novamente.
             self.SearchField()  # Obtem a caracteristica dos campos da grid, gerando a lista self.Table
         
         td = ''
-
-        if Ret:
-            #element = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'tmodaldialog.twidget'))) 
-            # as duas linhas abaixo são somente documentação
-            #element = self.driver.find_element_by_xpath("//div[@id='COMP7626']/div[1]/table/tbody/tr[@id='0']/td[@id='1']") # para clicar no segundo campo da 1a linha do grid
-            #element = self.driver.find_element_by_xpath("//div[@id='COMP7626']/div[1]/table/tbody/tr[@id='1']/td[@id='1']") # para clicar no segundo campo da 2a linha do grid
-            self.lineGrid = 0
-            for campo, valor, linha in self.gridcpousr:                    
-                itens = self.driver.find_elements(By.CSS_SELECTOR, ".alternate.selected-row")
-                for line in itens:
-                    if line.is_displayed():
-                        td = line
-                        break                
-                element = td.find_elements(By.CSS_SELECTOR, ".selected-cell")
-                if element:
-                    element = element[0]
-
-                if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
-                    element = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'tmodaldialog.twidget')))
-                    self.SendKeys(element, Keys.DOWN)#element.send_keys(Keys.DOWN)
-                    self.lineGrid += 1
-                    time.sleep(3)
-                else:
-                    #coluna = self.Table[2].index("M->%s" %campo)
-                    coluna = self.Table[1].index(campo)
-                    if self.consolelog:
-                        print('Posicionando no campo %s' %campo)
-                    # controla se a celula esta posicionada onde a variavel 'coluna' esta indicando e se a celula foi preenchida com o conteúdo da variavel 'valor'.
-                    while self.cawait(coluna, campo, valor, element, ChkResult):
-
-                        Id = self.SetScrap('', 'div', self.cClass, 'setGrid')
-                        if Id:
-                            # nao estava posicionado na celula correta então tenta novamente e volta para a funcao cawait()
-                            if self.advpl:
-                                element = self.driver.find_element_by_xpath("//div[@id='%s']/div[1]/table/tbody/tr[@id=%s]/td[@id=%s]" % ( str(Id), str(self.lineGrid), str(coluna) ) )
-                            else:
-                                element = self.driver.find_element_by_xpath("//div[@id='%s']/div/table/tbody/tr[@id=%s]/td[@id=%s]/div" % ( str(Id), str(self.lineGrid), str(coluna) ) )
-                                #//div[@id='COMP8015']/div/table/tbody/tr/td[3]/div
-                            self.lastColweb = coluna
-                            time.sleep(1)
-                            self.wait.until(EC.element_to_be_clickable((By.ID, Id)))
-                            self.Click(element)
+        self.lineGrid = 0
+        for campo, valor, linha in self.gridcpousr:                    
+            itens = lambda: self.driver.find_elements(By.CSS_SELECTOR, ".selected-row")
+            for line in itens():
+                if line.is_displayed():
+                    td = line
+                    break                
+            element = lambda: td.find_element(By.CSS_SELECTOR, ".selected-cell")
+            
+            if not element():
+                self.log_error("Celula não encontrada!")
+                
+            if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
+                self.lineGrid += 1
+                self.down_grid()  
+                time.sleep(3)
+            else:
+                coluna = self.Table[1].index(campo)
+                if self.consolelog:
+                    print('Posicionando no campo %s' %campo)
+                # controla se a celula esta posicionada onde a variavel 'coluna' esta indicando e se a celula foi preenchida com o conteúdo da variavel 'valor'.
+                while self.cawait(coluna, campo, valor, element, ChkResult):
+                    Id = self.SetScrap('', 'div', self.cClass, 'setGrid')
+                    if Id:
+                        # nao estava posicionado na celula correta então tenta novamente e volta para a funcao cawait()
+                        if self.advpl:
+                            element_table = self.driver.find_element_by_xpath("//div[@id='%s']/div[1]/table/tbody/tr[@id=%s]/td[@id=%s]" % ( str(Id), str(self.lineGrid), str(coluna) ) )
+                        else:
+                            element_table = self.driver.find_element_by_xpath("//div[@id='%s']/div/table/tbody/tr[@id=%s]/td[@id=%s]/div" % ( str(Id), str(self.lineGrid), str(coluna) ) )
+                            #//div[@id='COMP8015']/div/table/tbody/tr/td[3]/div
+                        self.lastColweb = coluna
+                        time.sleep(1)
+                        self.wait.until(EC.element_to_be_clickable((By.ID, Id)))
+                        self.Click(element_table)
         # Neste momento devo limpar a lista gridcpousr, pois ja utilizei os seus dados.
         self.gridcpousr = []
         return True
@@ -1337,8 +1329,8 @@ class CAWebHelper(unittest.TestCase):
             self.set_enchoice(campo, valor, '', 'Enchoice', '', '', disabled)
         elif cabitem == "aItens":
             # identifica nova linha quando executado através do metodo UTCheckResult
-            if chknewline and self.CpoNewLine == campo:
-                self.UTAddLine()
+            #if chknewline and self.CpoNewLine == campo:
+            #    self.UTAddLine()
             # quando for grid, guarda os campos e conteúdo na lista
             self.gridcpousr.append([campo, valor, linha])
             # guarda o campo de referencia para posteriormente adicionar nova linha
@@ -1497,16 +1489,7 @@ class CAWebHelper(unittest.TestCase):
             if self.SearchStack('GetValue'):
                 self.grid_value = valorweb
                 return False # return false encerra o laço
-
-            '''
-            # Se a celula nao estiver posicionada onde a variavel 'coluna' esta indicando
-            if self.lastColweb != str(coluna):
-                print('Posicionando na coluna %s' %str(coluna))
-                # return true fara com que entre novamente aqui( cawait ) e tente focar na celula que a variavel 'coluna' esta indicando
-                return True
-            # A celula esta posicionada conforme a variavel 'coluna' indicou !
-            else:
-            '''
+                       
             valsub = self.apply_mask(valor)
             if self.lastColweb != coluna:
                 return True
@@ -1520,10 +1503,10 @@ class CAWebHelper(unittest.TestCase):
                         # O campo numérico esta vazio ?
                         if valorweb != valor:
                             # preencha o campo numerico
-                            self.SendKeys(element, Keys.ENTER)#element.send_keys(Keys.ENTER)
+                            self.SendKeys(element(), Keys.ENTER)#element.send_keys(Keys.ENTER)
                             time.sleep(1)
-                            self.SendKeys(element, valsub)#element.send_keys(valor)
-                            self.SendKeys(element, Keys.ENTER)#element.send_keys(Keys.ENTER)
+                            self.SendKeys(element(), valsub)#element.send_keys(valor)
+                            self.SendKeys(element(), Keys.ENTER)#element.send_keys(Keys.ENTER)
 
                             # return true fara com que entre novamente aqui( cawait ) para garantir que os dados foram preenchidos corretamente.
                             return True
@@ -1535,7 +1518,7 @@ class CAWebHelper(unittest.TestCase):
                     elif valorweb != valor.strip():
                         #preencha campo
                         #clique enter na célula
-                        self.DoubleClick(element)#self.SendKeys(element, Keys.ENTER)
+                        self.DoubleClick(element())#self.SendKeys(element, Keys.ENTER)
                         #Campo caractere
                         Id = self.SetScrap(campo,'div','tget', args1='caSeek')
                         #Se for combobox na grid
@@ -1547,19 +1530,19 @@ class CAWebHelper(unittest.TestCase):
                                     return False
                         if Id:
                             self.lenvalorweb = len(self.get_web_value(Id))
-                            element = self.driver.find_element_by_id(Id)
+                            element_ = self.driver.find_element_by_id(Id)
                             
-                            if element.tag_name == 'div':
-                                element = element.find_element_by_tag_name("input")
+                            if element_.tag_name == 'div':
+                                element_ = element_.find_element_by_tag_name("input")
 
                             time.sleep(1)
-                            self.Click(element)
-                            if valsub != valor and self.check_mask(element):
-                                self.SendKeys(element, valsub)
+                            self.Click(element_)
+                            if valsub != valor and self.check_mask(element_):
+                                self.SendKeys(element_, valsub)
                             else:
-                                self.SendKeys(element, valor)
+                                self.SendKeys(element_, valor)
                             if len(valor) < self.lenvalorweb:
-                                self.SendKeys(element, Keys.ENTER)
+                                self.SendKeys(element_, Keys.ENTER)
                         # return true fara com que entre novamente aqui( cawait ) para garantir que os dados foram preenchidos corretamente.
                         return True
                     else:
@@ -2097,7 +2080,7 @@ class CAWebHelper(unittest.TestCase):
         Método que efetua o clique na aba
         ''' 
         self.rota = "ClickFolder"
-        self.btnenchoice = True
+        #self.btnenchoice = True
         self.wait_enchoice()
         time.sleep(2)
         if self.close_element:
@@ -2304,7 +2287,7 @@ class CAWebHelper(unittest.TestCase):
         if new_log_line:
             self.log.new_line(False, log_message)
         self.log.save_file()
-        self.Restart()
+        #self.Restart()
         self.assertTrue(False, log_message)
 
     def SetKey(self, key):
@@ -2347,7 +2330,7 @@ class CAWebHelper(unittest.TestCase):
         return getActiveElement()
         """
 
-        try:
+        try: 
             Id = self.driver.execute_script(script)
             if Id:
                 element = self.driver.find_element_by_id(Id)
@@ -2355,12 +2338,13 @@ class CAWebHelper(unittest.TestCase):
                 element = self.driver.find_element(By.TAG_NAME, "html")
             
             if key.upper() in supported_keys:
-                self.SendKeys(element, supported_keys[key.upper()])
+                if key.upper() == "DOWN":
+                    self.UTSetValue('aItens','newline','0')
+                else:
+                    self.focus(element)
+                    self.SendKeys(element, supported_keys[key.upper()])
             else:
                 self.log_error("Key is not supported")
-
-            if key.upper() == "DOWN":
-                self.UTAddLine()
 
         except Exception as error:
             self.log_error(str(error))
@@ -2385,3 +2369,6 @@ class CAWebHelper(unittest.TestCase):
 
         script = "window.focus; elem = document.querySelector('"+ selector +"'); elem.focus(); elem.click()"
         self.driver.execute_script(script)
+
+    def down_grid(self):
+        ActionChains(self.driver).key_down(Keys.DOWN).perform()
