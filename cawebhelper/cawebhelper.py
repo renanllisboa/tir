@@ -445,7 +445,7 @@ class CAWebHelper(unittest.TestCase):
                 self.log_error("Celula não encontrada!")
                 
             if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
-                self.lineGrid = td.get_attribute("id")
+                self.lineGrid = int(td.get_attribute("id"))
                 self.down_grid()  
                 time.sleep(3)
             else:
