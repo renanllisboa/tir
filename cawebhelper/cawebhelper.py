@@ -434,7 +434,7 @@ class CAWebHelper(unittest.TestCase):
         td = ''
         self.lineGrid = 0
         for campo, valor, linha in self.gridcpousr:                    
-            itens = lambda: self.driver.find_elements(By.CSS_SELECTOR, ".selected-row")
+            itens = lambda: self.driver.find_elements(By.CSS_SELECTOR, ".cell-mode .selected-row")
             for line in itens():
                 if line.is_displayed():
                     td = line
@@ -2289,7 +2289,7 @@ class CAWebHelper(unittest.TestCase):
         if new_log_line:
             self.log.new_line(False, log_message)
         self.log.save_file()
-        #self.Restart()
+        self.Restart()
         self.assertTrue(False, log_message)
 
     def SetKey(self, key):
