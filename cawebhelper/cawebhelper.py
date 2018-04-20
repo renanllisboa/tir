@@ -443,6 +443,7 @@ class CAWebHelper(unittest.TestCase):
                 
             if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
                 self.lineGrid = int(td.get_attribute("id"))
+                time.sleep(3)
                 self.down_grid()  
                 time.sleep(3)
             else:
