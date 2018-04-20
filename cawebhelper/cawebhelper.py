@@ -1296,8 +1296,8 @@ class CAWebHelper(unittest.TestCase):
         
         if not self.backupSetup:
             self.backupSetup = { 'progini': self.config.initialprog, 'data': self.config.date, 'grupo': self.config.group, 'filial': self.config.branch }
-
-        self.ProgramaInicial(initial_program)
+        if not self.config.skip_environment:
+            self.ProgramaInicial(initial_program)
 
         self.Usuario()
         self.Ambiente()
@@ -1681,8 +1681,9 @@ class CAWebHelper(unittest.TestCase):
         self.idwizard = []
         self.btnenchoice = True
         self.driver.refresh()
-        self.driver.switch_to_alert().accept()  
-        self.ProgramaInicial()
+        self.driver.switch_to_alert().accept()
+        if not self.config.skip_environment:
+            self.ProgramaInicial()
         self.classe = ''
         self.Usuario()
         self.Ambiente()
