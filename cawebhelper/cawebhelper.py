@@ -2252,7 +2252,7 @@ class CAWebHelper(unittest.TestCase):
         if new_log_line:
             self.log.new_line(False, log_message)
         self.log.save_file()
-        #self.Restart()
+        self.Restart()
         self.assertTrue(False, log_message)
 
     def SetKey(self, key):
