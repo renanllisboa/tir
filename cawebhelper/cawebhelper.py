@@ -1578,9 +1578,11 @@ class CAWebHelper(unittest.TestCase):
                 Id = self.SetScrap(valorusr, '','tsay twidget dict-tsay align-left transparent','caHelp')
         if cabitem != 'aItens':
             if Id:
+                time.sleep(1)
                 element = self.driver.find_element_by_id(Id)
                 if args1 != 'input':
                     self.Click(element)
+                time.sleep(1)
                 valorweb = self.get_web_value(Id)
                 self.lenvalorweb = len(valorweb)
                 valorweb = valorweb.strip()
@@ -1591,6 +1593,7 @@ class CAWebHelper(unittest.TestCase):
                     valorusr = self.apply_mask(valorusr)
                 if type(valorweb) is str:
                     valorweb = valorweb[0:len(str(valorusr))]
+                time.sleep(1)
             if args1 != 'input':
                 self.LogResult(campo, valorusr, valorweb)
         else:
@@ -1991,6 +1994,7 @@ class CAWebHelper(unittest.TestCase):
                         if button in self.language.no_actions:
                             self.savebtn = button
                             self.idwizard = []
+                            self.LastIdBtn = []
                         if Id == 'button-ok':
                             element = self.driver.find_element_by_class_name(Id)
                         else:
@@ -2251,6 +2255,7 @@ class CAWebHelper(unittest.TestCase):
         '''
         This method closes the last open modal in the screen.
         '''
+        time.sleep(1)
         modals = self.driver.find_elements(By.CSS_SELECTOR, ".tmodaldialog")
         if modals and self.element_exists(By.CSS_SELECTOR, ".tmodaldialog .tbrowsebutton"):
             modals.sort(key=lambda x: x.get_attribute("style").split("z-index:")[1].split(";")[0], reverse=True)
