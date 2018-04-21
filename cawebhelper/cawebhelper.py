@@ -1560,6 +1560,7 @@ class CAWebHelper(unittest.TestCase):
         """
         Validação de interface
         """
+        time.sleep(1)
         if args1 != 'input' and cabitem != 'help':
             self.wait_enchoice()
             self.rota = "UTCheckResult"
@@ -1849,7 +1850,7 @@ class CAWebHelper(unittest.TestCase):
         Navigates through the lateral menu using provided menu path.
         e.g. "MenuItem1 > MenuItem2 > MenuItem3"
         '''
-
+        time.sleep(1)
         menuitens = list(map(str.strip, menuitens.split(">")))
 
         menuId = self.SetScrap(cClass="tmenu")
@@ -1887,6 +1888,7 @@ class CAWebHelper(unittest.TestCase):
         '''
         Wait for elements defined by the CSS Selector to be present on the screen
         '''
+        time.sleep(3)
         self.wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector)))
 
     def GetValue(self, cabitem, field):
@@ -2255,7 +2257,6 @@ class CAWebHelper(unittest.TestCase):
         '''
         This method closes the last open modal in the screen.
         '''
-        time.sleep(1)
         modals = self.driver.find_elements(By.CSS_SELECTOR, ".tmodaldialog")
         if modals and self.element_exists(By.CSS_SELECTOR, ".tmodaldialog .tbrowsebutton"):
             modals.sort(key=lambda x: x.get_attribute("style").split("z-index:")[1].split(";")[0], reverse=True)
