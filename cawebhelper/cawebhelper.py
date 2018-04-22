@@ -1319,15 +1319,21 @@ class CAWebHelper(unittest.TestCase):
     def UTSetValue(self, cabitem, campo, valor, linha=0, chknewline=False, disabled=False):
         """
         Indica os campos e o conteudo do campo para preenchimento da tela.
-        """
-        #time.sleep(1)
+        """        
+        #while not self.element_exists(By.CSS_SELECTOR, "[name*='{}']".format(campo) ):
+    
         self.elementDisabled = False
         
-        #while not self.element_exists(By.CSS_SELECTOR, "[name*='{}']".format(campo) ):
-        self.wait_enchoice()
+        if not isinstance(valor,bool):
+            self.wait_enchoice()
                     
         if cabitem == "aCab":
-            self.set_enchoice(campo, valor, '', 'Enchoice', '', '', disabled)
+            if isinstance(valor,bool): # Tratamento para campos do tipo check e radio
+                element = self.check_checkbox(campo,valor)
+                if not element:
+                   element = self.check_radio(campo,valor)
+            else:
+                self.set_enchoice(campo, valor, '', 'Enchoice', '', '', disabled)
         elif cabitem == "aItens":
             # identifica nova linha quando executado através do metodo UTCheckResult
             #if chknewline and self.CpoNewLine == campo:
@@ -1566,7 +1572,11 @@ class CAWebHelper(unittest.TestCase):
             self.rota = "UTCheckResult"
         valorweb = ''
         if not Id:
-            if cabitem == 'aCab':
+            if cabitem == 'aCab' and isinstance(valorusr,bool):
+                valorweb = self.result_checkbox(campo,valorusr)
+                self.LogResult(campo, valorusr, valorweb)
+                return valorweb
+            elif cabitem == 'aCab':
                 underline = (r'\w+(_)')#Se o campo conter "_"
                 match = re.search(underline, campo)
                 if match:
@@ -2257,6 +2267,7 @@ class CAWebHelper(unittest.TestCase):
         '''
         This method closes the last open modal in the screen.
         '''
+        time.sleep(1)
         modals = self.driver.find_elements(By.CSS_SELECTOR, ".tmodaldialog")
         if modals and self.element_exists(By.CSS_SELECTOR, ".tmodaldialog .tbrowsebutton"):
             modals.sort(key=lambda x: x.get_attribute("style").split("z-index:")[1].split(";")[0], reverse=True)
@@ -2385,3 +2396,42 @@ class CAWebHelper(unittest.TestCase):
     
     def enter_grid(self):
         ActionChains(self.driver).key_down(Keys.ENTER).perform()
+
+    def check_checkbox(self,campo,valor):
+        time.sleep(1)
+        element = ''
+        lista = self.driver.find_elements(By.CSS_SELECTOR, ".tcheckbox.twidget")
+        for line in lista:
+            if line.is_displayed() and line.get_attribute('name').split('->')[1] == campo:
+                checked = "CHECKED" in line.get_attribute('class').upper()
+                if valor != checked:
+                    element = line
+                    self.Click(line)
+                    time.sleep(1)
+                    break
+        return element
+
+    def check_radio(self,campo,valor):
+        time.sleep(1)
+        element = ''  
+        lista = self.driver.find_elements(By.CSS_SELECTOR, ".tradiobutton.twidget")
+        for line in lista:
+            if line.is_displayed():
+                lista2 = line.find_elements(By.CSS_SELECTOR, ".tradiobuttonitem")
+                for line2 in lista2:
+                    if line2.text.upper() == campo.upper():
+                        element = line2
+                        self.Click(line2)
+                        time.sleep(1)
+                        return element
+    
+    def result_checkbox(self,campo,valor):
+        result = False
+        time.sleep(1)
+        element = ''
+        lista = self.driver.find_elements(By.CSS_SELECTOR, ".tcheckbox.twidget")
+        for line in lista:
+            if line.is_displayed() and line.get_attribute('name').split('->')[1] == campo:
+                if "CHECKED" in line.get_attribute('class').upper():
+                    result = True
+        return result
