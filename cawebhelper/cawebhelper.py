@@ -120,6 +120,7 @@ class CAWebHelper(unittest.TestCase):
         Method that defines the environment that will be used
         """
         try:
+            print('time.sleep(2)')
             time.sleep(2) 
             Id = self.SetScrap(self.language.user, 'div', 'tget')
             if self.consolelog:
@@ -149,6 +150,7 @@ class CAWebHelper(unittest.TestCase):
             if self.consolelog:
                 print('SetUsr ID: %s' %Id)
             element = self.driver.find_element_by_id(Id)
+            print('time.sleep(2)')
             time.sleep(2)
             self.DoubleClick(element)
             self.SendKeys(element, Keys.HOME)
@@ -350,6 +352,7 @@ class CAWebHelper(unittest.TestCase):
                     if self.classe == 'tcombobox':
                         self.select_combo(Id, valor)
                     else:
+                        print('time.sleep(1)')
                         time.sleep(1)
                         self.DoubleClick(element)
                         if self.valtype != 'N':
@@ -385,6 +388,7 @@ class CAWebHelper(unittest.TestCase):
                         print(error)
                     self.SetButton(self.language.cancel)
                     self.assertTrue(False, error)
+                print('time.sleep(1)')
                 time.sleep(1)
                 resultado = self.UTCheckResult('', campo, valor, 0, Id, 'input')
 
@@ -417,8 +421,10 @@ class CAWebHelper(unittest.TestCase):
                 valor = x.text
                 break
         if not self.elementDisabled:
+            print('time.sleep(2)')
             time.sleep(2)       
             combo.select_by_visible_text(valor)
+            print('time.sleep(2)')
             time.sleep(2)
         return valor
 
@@ -447,8 +453,10 @@ class CAWebHelper(unittest.TestCase):
                 
             if campo == "newline" or (ChkResult and linha and ((linha - 1) != self.lineGrid)):
                 self.lineGrid = int(td.get_attribute("id"))
+                print('time.sleep(3)')
                 time.sleep(3)
                 self.down_grid()  
+                print('time.sleep(3)')
                 time.sleep(3)
             else:
                 coluna = self.Table[1].index(campo)
@@ -464,6 +472,7 @@ class CAWebHelper(unittest.TestCase):
                         else:
                             element_table = self.driver.find_element_by_xpath("//div[@id='%s']/div/table/tbody/tr[@id=%s]/td[@id=%s]/div" % ( str(Id), str(self.lineGrid), str(coluna) ) )
                         self.lastColweb = coluna
+                        print('time.sleep(1)')
                         time.sleep(1)
                         self.wait.until(EC.element_to_be_clickable((By.ID, Id)))
                         self.Click(element_table)
@@ -538,6 +547,7 @@ class CAWebHelper(unittest.TestCase):
                     break
 
             if not args1 == 'Grid':#Só espera 1 segundo se não for Grid
+                print('time.sleep(1)')
                 time.sleep(1)#tempo de espera para cada verificação.
             if self.consolelog:
                 print('Procurando %s' %seek)
@@ -838,6 +848,7 @@ class CAWebHelper(unittest.TestCase):
                 if args1 == 'Enchoice' or args1 == 'Grid':
                     if args1 == 'Grid':
                         if args4 == 'SearchField': 
+                            print('time.sleep(1)')
                             time.sleep(1)
                             if seek in line.attrs['name']:
                                 th = soup.find_all(class_=('selected-column'))
@@ -1178,6 +1189,7 @@ class CAWebHelper(unittest.TestCase):
             pass
 
     def placeHolder(self, placeholder='', chave=''):
+        print('time.sleep(2)')
         time.sleep(2)
         content = self.driver.page_source
         soup = BeautifulSoup(content,"html.parser")
@@ -1209,6 +1221,7 @@ class CAWebHelper(unittest.TestCase):
             
             search = element.find_element_by_tag_name("img")
             self.Click(search)
+            print('time.sleep(2)')
             time.sleep(2)    
 
             tries = 0
@@ -1239,6 +1252,7 @@ class CAWebHelper(unittest.TestCase):
                     return True
                 except:
                     pass
+                    print('time.sleep(3)')
                     time.sleep(3)
             else:
                 self.driver.save_screenshot( self.GetFunction() +".png")
@@ -1360,6 +1374,7 @@ class CAWebHelper(unittest.TestCase):
         """
         Finaliza o browser
         """   
+        print('time.sleep(4)')
         time.sleep(4)
         self.driver.close()  
 
@@ -1511,6 +1526,7 @@ class CAWebHelper(unittest.TestCase):
                         if valorweb != valor:
                             # preencha o campo numerico
                             self.SendKeys(element(), Keys.ENTER)#element.send_keys(Keys.ENTER)
+                            print('time.sleep(1)')
                             time.sleep(1)
                             self.SendKeys(element(), valsub)#element.send_keys(valor)
                             self.SendKeys(element(), Keys.ENTER)#element.send_keys(Keys.ENTER)
@@ -1526,6 +1542,7 @@ class CAWebHelper(unittest.TestCase):
                         #preencha campo
                         #clique enter na célula
                         #self.DoubleClick(element())#self.SendKeys(element, Keys.ENTER)
+                        print('time.sleep(3)')
                         time.sleep(3)
                         self.enter_grid()
                         #Campo caractere
@@ -1544,6 +1561,7 @@ class CAWebHelper(unittest.TestCase):
                             if element_.tag_name == 'div':
                                 element_ = element_.find_element_by_tag_name("input")
 
+                            print('time.sleep(1)')
                             time.sleep(1)
                             self.Click(element_)
                             if valsub != valor and self.check_mask(element_):
@@ -1566,6 +1584,7 @@ class CAWebHelper(unittest.TestCase):
         """
         Validação de interface
         """
+        print('time.sleep(1)')
         time.sleep(1)
         if args1 != 'input' and cabitem != 'help':
             self.wait_enchoice()
@@ -1589,10 +1608,12 @@ class CAWebHelper(unittest.TestCase):
                 Id = self.SetScrap(valorusr, '','tsay twidget dict-tsay align-left transparent','caHelp')
         if cabitem != 'aItens':
             if Id:
+                print('time.sleep(1)')
                 time.sleep(1)
                 element = self.driver.find_element_by_id(Id)
                 if args1 != 'input':
                     self.Click(element)
+                print('time.sleep(1)')
                 time.sleep(1)
                 valorweb = self.get_web_value(Id)
                 self.lenvalorweb = len(valorweb)
@@ -1604,6 +1625,7 @@ class CAWebHelper(unittest.TestCase):
                     valorusr = self.apply_mask(valorusr)
                 if type(valorweb) is str:
                     valorweb = valorweb[0:len(str(valorusr))]
+                print('time.sleep(1)')
                 time.sleep(1)
             if args1 != 'input':
                 self.LogResult(campo, valorusr, valorweb)
@@ -1843,6 +1865,7 @@ class CAWebHelper(unittest.TestCase):
             element_list = self.driver.find_elements(by, selector)
             return len(element_list) >= position
         else:
+            print('time.sleep(1)')
             time.sleep(1)            
 
             content = self.driver.page_source
@@ -1860,6 +1883,7 @@ class CAWebHelper(unittest.TestCase):
         Navigates through the lateral menu using provided menu path.
         e.g. "MenuItem1 > MenuItem2 > MenuItem3"
         '''
+        print('time.sleep(1)')
         time.sleep(1)
         menuitens = list(map(str.strip, menuitens.split(">")))
 
@@ -1898,6 +1922,7 @@ class CAWebHelper(unittest.TestCase):
         '''
         Wait for elements defined by the CSS Selector to be present on the screen
         '''
+        print('time.sleep(3)')
         time.sleep(3)
         self.wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, selector)))
 
@@ -1999,6 +2024,8 @@ class CAWebHelper(unittest.TestCase):
                         if not Id:
                             Id = self.SetScrap(self.language.other_actions, tag, cClass, args1,'', '', '', args3,searchMsg)
                             element = self.driver.find_element_by_id(Id)
+                            print('time.sleep(3)')
+                            time.sleep(3)
                             self.Click(element)
                             if Id:
                                 self.SetItemMen(button, '', 'menuitem')
@@ -2011,6 +2038,7 @@ class CAWebHelper(unittest.TestCase):
                             element = self.driver.find_element_by_class_name(Id)
                         else:
                             element = self.driver.find_element_by_id(Id)
+                        print('time.sleep(3)')
                         time.sleep(3)
                         self.scroll_to_element(element)#posiciona o scroll baseado na height do elemento a ser clicado.
                         self.Click(element)
@@ -2076,6 +2104,7 @@ class CAWebHelper(unittest.TestCase):
             else:
                 if lista:
                     break
+            print('time.sleep(5)')
             time.sleep(5)
 
     def SetTabEDAPP(self, tabela):
@@ -2102,6 +2131,7 @@ class CAWebHelper(unittest.TestCase):
         self.rota = "ClickFolder"
         #self.btnenchoice = True
         self.wait_enchoice()
+        print('time.sleep(2)')
         time.sleep(2)
         if self.close_element:
             self.move_element(self.close_element) # Retira o ToolTip dos elementos focados.
@@ -2152,6 +2182,7 @@ class CAWebHelper(unittest.TestCase):
                             elements_list = grid.find_elements(By.CSS_SELECTOR, "td[id='1']")
                             self.scroll_to_element(elements_list[index])
                             self.Click(elements_list[index])
+                            print('time.sleep(1)')
                             time.sleep(1)
                             self.SendKeys(elements_list[index], Keys.ENTER)
 
@@ -2187,6 +2218,7 @@ class CAWebHelper(unittest.TestCase):
             self.SetButton("Editar")
 
             # Faz a captura dos elementos dos campos
+            print('time.sleep(5)')
             time.sleep(5)
             content = self.driver.page_source
             soup = BeautifulSoup(content,"html.parser")
@@ -2267,6 +2299,7 @@ class CAWebHelper(unittest.TestCase):
         '''
         This method closes the last open modal in the screen.
         '''
+        print('time.sleep(1)')
         time.sleep(1)
         modals = self.driver.find_elements(By.CSS_SELECTOR, ".tmodaldialog")
         if modals and self.element_exists(By.CSS_SELECTOR, ".tmodaldialog .tbrowsebutton"):
@@ -2398,6 +2431,7 @@ class CAWebHelper(unittest.TestCase):
         ActionChains(self.driver).key_down(Keys.ENTER).perform()
 
     def check_checkbox(self,campo,valor):
+        print('time.sleep(1)')
         time.sleep(1)
         element = ''
         lista = self.driver.find_elements(By.CSS_SELECTOR, ".tcheckbox.twidget")
@@ -2407,11 +2441,13 @@ class CAWebHelper(unittest.TestCase):
                 if valor != checked:
                     element = line
                     self.Click(line)
+                    print('time.sleep(1)')
                     time.sleep(1)
                     break
         return element
 
     def check_radio(self,campo,valor):
+        print('time.sleep(1)')
         time.sleep(1)
         element = ''  
         lista = self.driver.find_elements(By.CSS_SELECTOR, ".tradiobutton.twidget")
@@ -2422,11 +2458,13 @@ class CAWebHelper(unittest.TestCase):
                     if line2.text.upper() == campo.upper():
                         element = line2
                         self.Click(line2)
+                        print('time.sleep(1)')
                         time.sleep(1)
                         return element
     
     def result_checkbox(self,campo,valor):
         result = False
+        print('time.sleep(1)')
         time.sleep(1)
         element = ''
         lista = self.driver.find_elements(By.CSS_SELECTOR, ".tcheckbox.twidget")
