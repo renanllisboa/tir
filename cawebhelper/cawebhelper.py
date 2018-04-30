@@ -61,7 +61,6 @@ class CAWebHelper(unittest.TestCase):
         self.lenvalorweb = ''
         self.IdClose = ''
         self.grid_value = ''
-        self.grid_class = ''
         self.initial_program = 'SIGAADV'
         
         self.language = LanguagePack(self.config.language) if self.config.language else ""
@@ -454,54 +453,37 @@ class CAWebHelper(unittest.TestCase):
         '''
         Método que retorna a table corrente
         '''
-        # ADVPL
-        #self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'tgetdados.twidget.dict-msbrgetdbase')))
-        # MVC GRID NO FOLDER
-        #self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "tgrid.twidget.dict-tgrid.CONTROL_ALIGN_ALLCLIENT.no-gridlines.cell-mode")))
         aux = []
         content = self.driver.page_source
         soup = BeautifulSoup(content,"html.parser")
 
         is_advpl = self.is_advpl()
+        grid = soup.find_all('div', class_=(['tgetdados','tgrid','tcbrowse']))
 
-        if is_advpl:
-            # ADVPL
-            grid = soup.find_all('div', class_=('tgetdados'))
-            self.grid_class = ".tgetdados"
-        else:
-            # MVC GRID NO FOLDER
-            grid = soup.find_all('div', class_=('tgrid'))
-            self.grid_class = ".tgrid"
-        #Seleção de filiis            
-        if not grid:
-            grid = soup.find_all('div', class_=('tcbrowse'))
-            self.grid_class = ".tcbrowse"
-            
-        if not is_advpl:
-            for line in grid:
-                if 'cell-mode' in line.attrs['class']:
-                    aux += line
-            grid = aux
+        if grid:
+            grid = self.zindex_sort(grid,True)
+            grid = grid[0]
+            self.current_table = grid
 
-        divstring = str(grid)
-        soup = BeautifulSoup(divstring,"html.parser") 
-        rows = []
-        xlabel = ''
+            divstring = str(grid)
+            soup = BeautifulSoup(divstring,"html.parser") 
+            rows = []
+            xlabel = ''
 
-        for tr in soup.find_all('tr'):
+            for tr in soup.find_all('tr'):
 
-            cols = []
-            for th_td in tr.find_all(['td', 'th']):
-                th_td_text = th_td.get_text(strip=True)
-                cols.append(th_td_text)
-                xlabel = th_td.name
-            
-            if xlabel == 'td':
-                rows[len(rows)-1][1].append(cols)
-            else:
-                rows.append([cols,[]])
+                cols = []
+                for th_td in tr.find_all(['td', 'th']):
+                    th_td_text = th_td.get_text(strip=True)
+                    cols.append(th_td_text)
+                    xlabel = th_td.name
+                
+                if xlabel == 'td':
+                    rows[len(rows)-1][1].append(cols)
+                else:
+                    rows.append([cols,[]])
 
-        return rows    
+            return rows    
 
     def SetScrap(self, seek='', tag='', cClass='', args1='', args2='', args3=0, args4='', args5=60, searchMsg=True):
         '''
@@ -1300,7 +1282,7 @@ class CAWebHelper(unittest.TestCase):
         """
         Indica os campos e o conteudo do campo para preenchimento da tela.
         """
-        self.wait_element(campo)
+        
         self.elementDisabled = False
 
         if cabitem == "aCab":
@@ -1309,6 +1291,7 @@ class CAWebHelper(unittest.TestCase):
                 if not element:
                    element = self.check_radio(campo,valor)
             else:
+                self.wait_element(campo)
                 self.set_enchoice(campo, valor, '', 'Enchoice', '', '', disabled)
 
         elif cabitem == "aItens":
@@ -1822,7 +1805,7 @@ class CAWebHelper(unittest.TestCase):
             elements = list(soup.select(selector))
 
             for element in elements:
-                if text in element.text:
+                if text.strip().lower() == element.text.strip().lower():
                     return True
             return False
         
@@ -2092,26 +2075,32 @@ class CAWebHelper(unittest.TestCase):
             self.scroll_to_element(element)#posiciona o scroll baseado na height do elemento a ser clicado.
             self.Click(element)
     
-    def ClickBox(self, labels):
+    def ClickBox(self, fields, contents_list ):
         '''
-        Método que efetua o clique no checkbox
+        Method that clicks in checkbox
         '''
-        listas = labels.split(",")
-        #self.wait_element(item)
-        
-        if labels == 'Todos':
+        contents_list = contents_list.split(",")
+        fields = fields.split(",")
+
+        if contents_list == 'Todos':
+            self.wait_element('Inverte Selecao') # wait Inverte Seleção
             Id = self.SetScrap('Inverte Selecao', 'label', 'tcheckbox')
             if Id:
                 element = self.driver.find_element_by_id(Id)
                 self.Click(element)
         else:
-            table = self.SetTable()
-
-            while not table:
-                print("Esperando table")    
-                table = self.SetTable()
+            for line in fields:
+                self.wait_element(line) # wait columns
             
-            tables = self.driver.find_elements(By.CSS_SELECTOR, self.grid_class)
+            table_struct = self.SetTable() # Alimenta variavel  self.current_table 
+            while not table_struct:
+                print("Esperando table")    
+                table_struct = self.SetTable()
+                       
+            grid = self.current_table 
+            class_grid = grid.attrs['class'][0]
+            tables = self.driver.find_elements(By.CSS_SELECTOR, "." + class_grid)
+
             zindex = 0
             grid_id = ""
             for tab in tables:
@@ -2121,15 +2110,24 @@ class CAWebHelper(unittest.TestCase):
                     grid_id = tab.get_attribute("Id")
             
             grid = self.driver.find_element(By.ID, grid_id)
-
-            for lista in listas:
-                for x in range(0, len(table)):
-                    for index, y in enumerate(table[x][1]):
-                        if lista.strip() == y[1]:
+            
+            for line in contents_list:
+                for x in range(0, len(table_struct)):
+                    for index, y in enumerate(table_struct[x][1]):
+                        if line.strip() == y[1]:
                             elements_list = grid.find_elements(By.CSS_SELECTOR, "td[id='1']")
                             self.scroll_to_element(elements_list[index])
                             self.Click(elements_list[index])
-                            self.SendKeys(elements_list[index], Keys.ENTER)
+                            if class_grid != 'tcbrowse':
+                                print('time.sleep(1)')
+                                time.sleep(1)
+                                self.DoubleClick(elements_list[index])
+                                print('time.sleep(2)')
+                                time.sleep(1)
+                            else:
+                                self.SendKeys(elements_list[index], Keys.ENTER)
+                            break
+        self.current_table = ''
 
     def SetParameters( self, arrayParameters ):
         '''
@@ -2376,12 +2374,12 @@ class CAWebHelper(unittest.TestCase):
         ActionChains(self.driver).key_down(Keys.ENTER).perform()
 
     def check_checkbox(self,campo,valor):
-        print('time.sleep(1)')
-        time.sleep(1)
+        print('time.sleep(2)')
+        time.sleep(2)
         element = ''
         lista = self.driver.find_elements(By.CSS_SELECTOR, ".tcheckbox.twidget")
         for line in lista:
-            if line.is_displayed() and line.get_attribute('name').split('->')[1] == campo:
+            if line.is_displayed() and ((line.get_attribute('name') != None and line.get_attribute('name').split('->')[1] == campo) or  line.text.strip() == campo.strip()):
                 checked = "CHECKED" in line.get_attribute('class').upper()
                 if valor != checked:
                     element = line
@@ -2446,3 +2444,15 @@ class CAWebHelper(unittest.TestCase):
                 print("Waiting...")
             print('time.sleep(3) 1338')
             time.sleep(3)
+    
+    def SetFilePath(self,value):
+        self.wait_element("Nome do Arquivo:")
+        element = self.driver.find_element(By.CSS_SELECTOR, ".filepath input")
+        if element:
+            self.SendKeys(element, value)
+        elements = self.driver.find_elements(By.CSS_SELECTOR, ".tremoteopensave button")
+        if elements:
+            for line in elements:
+                if line.text.strip().upper() == "ABRIR":
+                    self.Click(line)
+                    break
