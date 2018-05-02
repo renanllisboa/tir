@@ -76,7 +76,6 @@ class CAWebHelper(unittest.TestCase):
         self.refreshed = False
         self.consolelog = True
         self.passfield = False
-        self.btnenchoice = True
         self.elementDisabled = False
         self.numberOfTries = 0
 
@@ -454,21 +453,18 @@ class CAWebHelper(unittest.TestCase):
         Método que retorna a table corrente
         '''
         aux = []
+        print('time.sleep(1)')
+        time.sleep(1)#tempo de espera para cada verificação.
+               
         content = self.driver.page_source
         soup = BeautifulSoup(content,"html.parser")
 
         grid = soup.find_all('div', class_=(['tgetdados','tgrid','tcbrowse']))
 
         if grid:
-            grid = self.zindex_sort(grid,True)
-            lista_filtrada = list(filter(lambda x: "id" in x.attrs, grid))
-            selenium_elements = list(map(lambda x: self.driver.find_element_by_id(x.attrs["id"]), grid))
-            filtered_ids = list(map(lambda x: x.get_attribute("id"), filter(lambda x: x.is_displayed(), selenium_elements)))
-            grid =  list(map(lambda x: x.attrs["id"] in filtered_ids, lista_filtrada))
-            if filtered_ids:
-                #self.driver.find_element_by_id(filtered_ids[0])
-                self.current_table = soup.find_all("div", {"id": filtered_ids[0] })[0]
-                grid = self.current_table
+            grid = self.filter_displayed_elements(grid)[0]
+            if grid:
+                self.current_table = grid
                 divstring = str(grid)
                 soup = BeautifulSoup(divstring,"html.parser") 
                 rows = []
@@ -1115,32 +1111,29 @@ class CAWebHelper(unittest.TestCase):
         '''
         Mètodo que pesquisa o registro no browse com base no indice informado.
         '''
-        self.btnenchoice = True
-        
-        if Ret:
-            self.savebtn = ''
-            #Caso solicite para alterar o indice
-            #if indice:
-            #Faz a busca do icone para clique e seleção do indice.
-            Id = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice', placeholder)
-            if Id:
-                element = self.driver.find_element_by_xpath("//div[@id='%s']/button" %Id)
-                return_wait = self.wait_until_clickable(element)
-                if self.rota == 'SetRotina' or self.rota == 'EDAPP':
-                    self.SetScrap(self.language.view, 'div', 'tbrowsebutton', 'wait', '', '', '', 10)
-                    self.rota = ''
-                if not return_wait:
-                    self.Click(element)
-                #seleciona a busca do indice baseado na descrição ex: Filial+numero
-                if indice:
-                    self.SetScrap(descricao, 'div', 'tradiobutton', 'indice', 'detail')
-                else:
-                    self.SetScrap(placeholder, 'div', 'tradiobutton', 'indicedefault', 'detail')
-                self.placeHolder(placeholder, chave)
-                # self.data_check(descricao,chave)
+        self.savebtn = ''
+        #Caso solicite para alterar o indice
+        #if indice:
+        #Faz a busca do icone para clique e seleção do indice.
+        Id = self.SetScrap('fwskin_seekbar_ico.png', '', 'tpanel', 'indice', placeholder)
+        if Id:
+            element = self.driver.find_element_by_xpath("//div[@id='%s']/button" %Id)
+            return_wait = self.wait_until_clickable(element)
+            if self.rota == 'SetRotina' or self.rota == 'EDAPP':
+                self.SetScrap(self.language.view, 'div', 'tbrowsebutton', 'wait', '', '', '', 10)
+                self.rota = ''
+            if not return_wait:
+                self.Click(element)
+            #seleciona a busca do indice baseado na descrição ex: Filial+numero
+            if indice:
+                self.SetScrap(descricao, 'div', 'tradiobutton', 'indice', 'detail')
             else:
-                self.proximo = False
-            pass
+                self.SetScrap(placeholder, 'div', 'tradiobutton', 'indicedefault', 'detail')
+            self.placeHolder(placeholder, chave)
+            # self.data_check(descricao,chave)
+        else:
+            self.proximo = False
+        pass
 
     def placeHolder(self, placeholder='', chave=''):
         
@@ -1646,7 +1639,6 @@ class CAWebHelper(unittest.TestCase):
     def Restart(self):
         self.LastIdBtn = []
         self.idwizard = []
-        self.btnenchoice = True
         self.driver.refresh()
         self.driver.switch_to_alert().accept()
         if not self.config.skip_environment:
@@ -2457,3 +2449,10 @@ class CAWebHelper(unittest.TestCase):
                 if line.text.strip().upper() == "ABRIR":
                     self.Click(line)
                     break
+    
+    def filter_displayed_elements(self, elements, reverse = True ):        
+        filtered_list = list(filter(lambda x: "id" in x.attrs, elements))
+        selenium_elements = list(map(lambda x : self.driver.find_element_by_id(x.attrs["id"]), filtered_list))
+        filtered_elements_ids = list(map(lambda x: x.get_attribute("id") , filter(lambda x: x.is_displayed(), selenium_elements)))
+        elements_displayed = list(filter(lambda x: x.attrs["id"] in filtered_elements_ids, elements))
+        return self.zindex_sort(elements_displayed,reverse)
