@@ -607,7 +607,7 @@ class CAWebHelper(unittest.TestCase):
             RetId = soup.button.attrs['class'][0]
             
         elif cClass == 'tbrowsebutton':
-            lista = soup.find_all(tag, class_=('tsbutton','tbutton', 'tbrowsebutton'))
+            lista = soup.find_all(tag, class_=('button','tsbutton','tbutton', 'tbrowsebutton'))
         
         elif args1 == 'abaenchoice' :
             lista = soup.find_all(class_=(cClass))
@@ -617,7 +617,7 @@ class CAWebHelper(unittest.TestCase):
                 pass
 
         elif args1 == 'btnok':
-            lista = soup.find_all(tag, class_=('tbutton', 'tsbutton', 'tbrowsebutton'))
+            lista = soup.find_all(tag, class_=('button','tbutton', 'tsbutton', 'tbrowsebutton'))
             
         if not lista and not RetId:
             lista = soup.find_all(tag)
@@ -1806,7 +1806,7 @@ class CAWebHelper(unittest.TestCase):
             elements = list(soup.select(selector))
 
             for element in elements:
-                if text.strip().lower() == element.text.strip().lower():
+                if text.strip().lower() in element.text.strip().lower():
                     return True
             return False
         
