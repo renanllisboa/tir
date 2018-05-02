@@ -603,7 +603,7 @@ class CAWebHelper(unittest.TestCase):
             RetId = soup.button.attrs['class'][0]
             
         elif cClass == 'tbrowsebutton':
-            lista = soup.find_all(tag, class_=('tsbutton','tbutton', 'tbrowsebutton'))
+            lista = soup.find_all(tag, class_=('button','tsbutton','tbutton', 'tbrowsebutton'))
         
         elif args1 == 'abaenchoice' :
             lista = soup.find_all(class_=(cClass))
@@ -613,7 +613,7 @@ class CAWebHelper(unittest.TestCase):
                 pass
 
         elif args1 == 'btnok':
-            lista = soup.find_all(tag, class_=('tbutton', 'tsbutton', 'tbrowsebutton'))
+            lista = soup.find_all(tag, class_=('button','tbutton', 'tsbutton', 'tbrowsebutton'))
             
         if not lista and not RetId:
             lista = soup.find_all(tag)
@@ -1795,13 +1795,14 @@ class CAWebHelper(unittest.TestCase):
         else:
             content = self.driver.page_source
             soup = BeautifulSoup(content,"html.parser")
-            elements = soup.select(".tmodaldialog.twidget")
+            elements = soup.find_all('div', class_=(['tmodaldialog','ui-dialog']))
+
             if elements:
                 soup = self.zindex_sort(elements,True)[0]
             elements = list(soup.select(selector))
 
             for element in elements:
-                if text.strip().lower() == element.text.strip().lower():
+                if text.strip().lower() in element.text.strip().lower():
                     return True
             return False
         
@@ -2087,7 +2088,12 @@ class CAWebHelper(unittest.TestCase):
         else:
             for line in fields:
                 self.wait_element(line) # wait columns
-            
+                break
+
+            for line in contents_list:
+                self.wait_element(line) # wait columns
+                break
+                
             table_struct = self.SetTable() # Alimenta variavel  self.current_table 
             while not table_struct:
                 print("Esperando table")    
