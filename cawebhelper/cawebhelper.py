@@ -1785,6 +1785,7 @@ class CAWebHelper(unittest.TestCase):
         '''
         Returns a boolean if element exists on the screen
         '''
+        elements =  ''
         if not position and not text:
             element_list = self.driver.find_elements(by, selector)
             return len(element_list) > 0
@@ -1794,7 +1795,9 @@ class CAWebHelper(unittest.TestCase):
         else:
             content = self.driver.page_source
             soup = BeautifulSoup(content,"html.parser")
-
+            elements = soup.select(".tmodaldialog.twidget")
+            if elements:
+                soup = self.zindex_sort(elements,True)[0]
             elements = list(soup.select(selector))
 
             for element in elements:
