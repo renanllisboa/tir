@@ -27,6 +27,7 @@ import cawebhelper.enumerations as enum
 from cawebhelper.log import Log
 from cawebhelper.config import ConfigLoader
 from cawebhelper.language import LanguagePack
+from cawebhelper.third_party.xpath_soup import xpath_soup
 
 class CAWebHelper(unittest.TestCase):
     def __init__(self, config_path=""):
@@ -2411,7 +2412,6 @@ class CAWebHelper(unittest.TestCase):
         result = False
         print('time.sleep(1)')
         time.sleep(1)
-        element = ''
         lista = self.driver.find_elements(By.CSS_SELECTOR, ".tcheckbox.twidget")
         for line in lista:
             if line.is_displayed() and line.get_attribute('name').split('->')[1] == campo:
@@ -2419,16 +2419,21 @@ class CAWebHelper(unittest.TestCase):
                     result = True
         return result
 
-    def field_exists(self,field):
-        underline = (r'\w+(_)')#Se o campo conter "_"
-        match = re.search(underline, field)
+    def field_exists(self, term, scrap_type):
+        if scrap_type == enum.ScrapType.TEXT:
+            underline = (r'\w+(_)')
+            match = re.search(underline, term)
         
-        if match:
-            Ret = self.element_exists(By.CSS_SELECTOR, "[name*='{}']".format(field) )
-        else:
-            Ret = self.element_exists(By.CSS_SELECTOR, "div",text = field )
+            if match:
+                Ret = self.element_exists(By.CSS_SELECTOR, "[name*='{}']".format(term) )
+            else:
+                Ret = self.element_exists(By.CSS_SELECTOR, "div",text = term )
 
-        return Ret
+            return Ret
+        elif scrap_type == enum.ScrapType.CSS_SELECTOR:
+            return self.element_exists(By.CSS_SELECTOR, term)
+        else:
+            return False
 
     def get_closing_button(self,is_advpl):
         if is_advpl:
@@ -2440,8 +2445,8 @@ class CAWebHelper(unittest.TestCase):
     def is_advpl(self):
         return self.element_exists(By.CSS_SELECTOR, "div.tbrowsebutton", text=self.language.cancel)      
 
-    def wait_element(self,field):
-        while not self.field_exists(field):
+    def wait_element(self, term, scrap_type=enum.ScrapType.TEXT):
+        while not self.field_exists(term, scrap_type):
             if self.consolelog:
                 print("Waiting...")
             print('time.sleep(3) 1338')
@@ -2465,3 +2470,16 @@ class CAWebHelper(unittest.TestCase):
         filtered_elements_ids = list(map(lambda x: x.get_attribute("id") , filter(lambda x: x.is_displayed(), selenium_elements)))
         elements_displayed = list(filter(lambda x: x.attrs["id"] in filtered_elements_ids, elements))
         return self.zindex_sort(elements_displayed,reverse)
+
+    def MessageBoxClick(self, button_text):
+        self.wait_element(".messagebox-container", enum.ScrapType.CSS_SELECTOR)         
+        
+        content = self.driver.page_source
+        soup = BeautifulSoup(content,"html.parser")
+        container = soup.select(".messagebox-container")
+        if container:
+            buttons = container[0].select(".ui-button")
+            button = list(filter(lambda x: x.text.lower() == button_text.lower(), buttons))
+            if button:
+                selenium_button = self.driver.find_element_by_xpath(xpath_soup(button[0]))
+                self.Click(selenium_button)
