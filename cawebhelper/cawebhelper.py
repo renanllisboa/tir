@@ -314,17 +314,17 @@ class CAWebHelper(unittest.TestCase):
                 self.scroll_to_element(element)#posiciona o scroll baseado na height do elemento a ser clicado.
                 try:
                     if self.classe == 'tcombobox':
-                        print('time.sleep(2) linha 351')
+                        print('time.sleep(2)')
                         time.sleep(2)
-                        self.wait.until(EC.element_to_be_clickable((By.ID, Id)))
                         self.select_combo(Id, valor)
                     else:
-                        self.focus(element)
-                        self.Click(element)
+                        print('time.sleep(1)')
+                        time.sleep(1)
                         self.DoubleClick(element)
                         if self.valtype != 'N':
                             self.SendKeys(element, Keys.DELETE)
-                            self.SendKeys(element, Keys.HOME)             
+                            self.SendKeys(element, Keys.HOME)
+                                                        
                         valsub = self.apply_mask(valor)
 
                         if valsub != valor and self.check_mask(element):
@@ -341,17 +341,10 @@ class CAWebHelper(unittest.TestCase):
                                     break
                                 tries+=1
                         else:
-                            self.focus(element)
-                            self.Click(element)
-                            self.SendKeys(element, Keys.HOME)
                             self.SendKeys(element, valor)
 
                         if tam_valorusr < tam_interface:
                             self.SendKeys(element, Keys.ENTER)
-                            # if self.valtype == 'N':
-                            #     self.SendKeys(element, Keys.ENTER)
-                            # else:                                
-                           	# 	self.SendKeys(element, Keys.TAB)
                 except Exception as error:
                     if self.consolelog:
                         print(error)
@@ -2456,6 +2449,7 @@ class CAWebHelper(unittest.TestCase):
         self.wait_element("Nome do Arquivo:")
         element = self.driver.find_element(By.CSS_SELECTOR, ".filepath input")
         if element:
+            self.driver.execute_script("document.querySelector('#{}').value='';".format(element.get_attribute("id")))
             self.SendKeys(element, value)
         elements = self.driver.find_elements(By.CSS_SELECTOR, ".tremoteopensave button")
         if elements:
