@@ -2292,7 +2292,7 @@ class CAWebHelper(unittest.TestCase):
     def SetKey(self, key):
         """
         Press the desired key on the keyboard on the focused element.
-        Supported keys: F1 to F12, Up, Down and Delete
+        Supported keys: F1 to F12, Up, Down, Delete and ESC
         """
         supported_keys = {
             "F1" : Keys.F1,
@@ -2309,7 +2309,8 @@ class CAWebHelper(unittest.TestCase):
             "F12" : Keys.F12,
             "UP" : Keys.UP,
             "DOWN" : Keys.DOWN,
-            "DELETE" : Keys.DELETE
+            "DELETE" : Keys.DELETE,
+            "ESC" : Keys.ESCAPE
         }
 
         #JavaScript function to return focused element if DIV or Input OR empty
