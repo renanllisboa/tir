@@ -722,7 +722,9 @@ class CAWebHelper(unittest.TestCase):
                     if not lista:
                         #Tenta montar a lista somente por Tag
                         lista = soup.find_all(tag) 
-                        
+
+        lista = self.zindex_sort(lista,True)
+        
         for line in lista:
             #print('Passou uma vez %s' %time.time())
             # campo de input ex: Digitacao do Usuario
@@ -829,6 +831,10 @@ class CAWebHelper(unittest.TestCase):
                                     if RetId:# IF/Break responsavel pela parada do FOR, quando é encontrado o ID do campo
                                         break 
                                 #preenche atributos do campo da enchoice
+                            elif line.next_sibling.text.strip() == seek.strip():
+                                RetId = line.attrs['id']
+                                self.classe = line.attrs['class'][0]
+                                break
                         elif list(filter(bool, line.attrs["name"].split('->')))[1] == seek:
                             RetId = line.attrs['id']
                             self.classe = line.attrs['class'][0]
