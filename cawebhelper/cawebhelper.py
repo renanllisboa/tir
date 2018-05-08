@@ -1936,15 +1936,24 @@ class CAWebHelper(unittest.TestCase):
         '''
         try:
             Id  = ''
-            self.wait_element(button)
+            if (button.lower() == "x"):
+                self.wait_element(term=".ui-button.ui-dialog-titlebar-close[title='Close']", scrap_type=enum.ScrapType.CSS_SELECTOR)
+            else:
+                self.wait_element(button)
             if self.VldData():
                # print('time.sleep(2)')
                # time.sleep(2)
+
                 if (button.lower() == self.language.Ok.lower()) and args1 != 'startParameters':
                     Id = self.SetScrap(button, tag, '', 'btnok') 
                     if Id:
                         element = self.driver.find_element_by_id(Id)
                         self.Click(element)
+
+                elif (button.lower() == "x" and self.element_exists(By.CSS_SELECTOR, ".ui-button.ui-dialog-titlebar-close[title='Close']")):
+                    element = self.driver.find_element(By.CSS_SELECTOR, ".ui-button.ui-dialog-titlebar-close[title='Close']")
+                    self.scroll_to_element(element)
+                    self.Click(element)
                 else:
                     if button in self.language.no_actions:
                         Id = self.SetScrap(button, tag, cClass, '', '', '', '', args3, searchMsg)
@@ -2292,7 +2301,7 @@ class CAWebHelper(unittest.TestCase):
     def SetKey(self, key):
         """
         Press the desired key on the keyboard on the focused element.
-        Supported keys: F1 to F12, Up, Down and Delete
+        Supported keys: F1 to F12, Up, Down, Delete and Escape
         """
         supported_keys = {
             "F1" : Keys.F1,
@@ -2309,7 +2318,8 @@ class CAWebHelper(unittest.TestCase):
             "F12" : Keys.F12,
             "UP" : Keys.UP,
             "DOWN" : Keys.DOWN,
-            "DELETE" : Keys.DELETE
+            "DELETE" : Keys.DELETE,
+            "ESC" : Keys.ESCAPE
         }
 
         #JavaScript function to return focused element if DIV or Input OR empty
