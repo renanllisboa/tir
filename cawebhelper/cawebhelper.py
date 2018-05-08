@@ -342,19 +342,20 @@ class CAWebHelper(unittest.TestCase):
                                 tries+=1
                         else:
                             self.SendKeys(element, valor)
+                        
+                        print('time.sleep(2)')
+                        time.sleep(2)
 
                         if tam_valorusr < tam_interface:
                             self.SendKeys(element, Keys.ENTER)
-                        self.focus(element)
-                        self.Click(element)
-                        self.SendKeys(element, Keys.ENTER)
+                        
                 except Exception as error:
                     if self.consolelog:
                         print(error)
                     self.SetButton(self.language.cancel)
                     self.assertTrue(False, error)
                 
-                print('time.sleep(2) linha 398 set_enchoice')
+                print('time.sleep(2)')
                 time.sleep(2)
 
                 resultado = self.UTCheckResult('', campo, valor, 0, Id, 'input')
@@ -1956,6 +1957,7 @@ class CAWebHelper(unittest.TestCase):
                 elif (button.lower() == "x" and self.element_exists(By.CSS_SELECTOR, ".ui-button.ui-dialog-titlebar-close[title='Close']")):
                     element = self.driver.find_element(By.CSS_SELECTOR, ".ui-button.ui-dialog-titlebar-close[title='Close']")
                     self.scroll_to_element(element)
+                    time.sleep(2)
                     self.Click(element)
                 else:
                     if button in self.language.no_actions:
