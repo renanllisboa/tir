@@ -345,6 +345,9 @@ class CAWebHelper(unittest.TestCase):
 
                         if tam_valorusr < tam_interface:
                             self.SendKeys(element, Keys.ENTER)
+                        self.focus(element)
+                        self.Click(element)
+                        self.SendKeys(element, Keys.ENTER)
                 except Exception as error:
                     if self.consolelog:
                         print(error)
