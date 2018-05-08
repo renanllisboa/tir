@@ -2301,7 +2301,7 @@ class CAWebHelper(unittest.TestCase):
     def SetKey(self, key):
         """
         Press the desired key on the keyboard on the focused element.
-        Supported keys: F1 to F12, Up, Down, Delete and Escape
+        Supported keys: F1 to F12, Up, Down, Delete and ESC
         """
         supported_keys = {
             "F1" : Keys.F1,
