@@ -450,7 +450,6 @@ class CAWebHelper(unittest.TestCase):
         '''
         Método que retorna a table corrente
         '''
-        aux = []
         print('time.sleep(1)')
         time.sleep(1)#tempo de espera para cada verificação.
                
@@ -1975,7 +1974,7 @@ class CAWebHelper(unittest.TestCase):
                         if button in self.language.no_actions:
                             self.idwizard = []
                             self.LastIdBtn = []
-                        if Id == 'button-ok':
+                        if Id == 'button-ok' or Id == 'button':
                             element = self.driver.find_element_by_class_name(Id)
                         else:
                             element = self.driver.find_element_by_id(Id)
