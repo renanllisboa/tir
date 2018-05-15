@@ -1518,10 +1518,9 @@ class CAWebHelper(unittest.TestCase):
         """
         Validação de interface
         """
-        self.wait_element(campo)
-
         if args1 != 'input' and cabitem != 'help':
             self.rota = "UTCheckResult"
+            #self.wait_element(campo)
         valorweb = ''
         if not Id:
             if cabitem == 'aCab' and isinstance(valorusr,bool):
