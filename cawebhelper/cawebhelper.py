@@ -402,6 +402,8 @@ class CAWebHelper(unittest.TestCase):
         self.lineGrid = 0
         for campo, valor, linha in self.gridcpousr:                    
             itens = lambda: self.driver.find_elements(By.CSS_SELECTOR, ".cell-mode .selected-row")
+            print('time.sleep(3)')
+            time.sleep(3)
             for line in itens():
                 if line.is_displayed():
                     td = line
@@ -2071,9 +2073,7 @@ class CAWebHelper(unittest.TestCase):
         close_element = self.get_closing_button(is_advpl)
 
         if close_element:
-            self.move_element(close_element) # Retira o ToolTip dos elementos focados.
-        
-        
+            self.move_element(close_element) # Retira o ToolTip dos elementos focados.      
 
         if self.VldData():
             print('time.sleep(1) - Linha 2077 - Após VldData')
