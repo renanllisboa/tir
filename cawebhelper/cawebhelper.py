@@ -60,7 +60,6 @@ class CAWebHelper(unittest.TestCase):
         self.idcomp = ''       
         self.rotina = ''
         self.lenvalorweb = ''
-        self.IdClose = ''
         self.grid_value = ''
         self.initial_program = 'SIGAADV'
         
@@ -624,8 +623,6 @@ class CAWebHelper(unittest.TestCase):
                 else:
                      text = line.text
                 if (text[0:len(seek)] == seek) and (line.attrs['class'][0] == 'tbutton' or line.attrs['class'][0] == 'tbrowsebutton' or line.attrs['class'][0] == 'tsbutton') and line.attrs['id'] not in self.LastId and not args1 == 'setGrid':#TODO VERIFICAR SE TERÁ EFEITO USAR O LEN EM line.string
-                    if self.savebtn == self.language.confirm and self.IdClose == line.attrs['id']:
-	                    continue
                     RetId = line.attrs['id']
                     if self.savebtn:
                         if RetId not in self.lenbutton:
@@ -912,8 +909,6 @@ class CAWebHelper(unittest.TestCase):
                     break
 
             else:
-                if  self.savebtn == self.language.confirm and self.IdClose == line.attrs['id']:
-	                continue
                 if seek ==  line.text and not args1 == 'Virtual':
                     RetId = line.attrs['id']
                     break
@@ -1520,7 +1515,6 @@ class CAWebHelper(unittest.TestCase):
         """
         if args1 != 'input' and cabitem != 'help':
             self.rota = "UTCheckResult"
-            #self.wait_element(campo)
         valorweb = ''
         if not Id:
             if cabitem == 'aCab' and isinstance(valorusr,bool):
@@ -1969,10 +1963,12 @@ class CAWebHelper(unittest.TestCase):
                             if Id:
                                 self.SetItemMen(button, '', 'menuitem')
                     if Id:
-                        self.savebtn = button
                         if button in self.language.no_actions:
                             self.idwizard = []
                             self.LastIdBtn = []
+                        else:
+                            self.savebtn = button
+
                         if Id == 'button-ok' or Id == 'button':
                             element = self.driver.find_element_by_class_name(Id)
                         else:
@@ -2065,14 +2061,20 @@ class CAWebHelper(unittest.TestCase):
         Método que efetua o clique na aba
         '''
         self.wait_element(term=item, scrap_type=enum.ScrapType.MIXED, optional_term=".tfolder.twidget")
-        self.rota = "ClickFolder"
         
+        if self.savebtn == self.language.view:
+            self.rota == 'CheckResultItens'
+        else:
+            self.rota = "ClickFolder"
+
         is_advpl = self.is_advpl()
         close_element = self.get_closing_button(is_advpl)
 
         if close_element:
             self.move_element(close_element) # Retira o ToolTip dos elementos focados.
         
+        
+
         if self.VldData():
             print('time.sleep(1) - Linha 2077 - Após VldData')
             time.sleep(1)
