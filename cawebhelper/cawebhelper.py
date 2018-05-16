@@ -2064,18 +2064,21 @@ class CAWebHelper(unittest.TestCase):
         '''
         Método que efetua o clique na aba
         '''
-        #self.wait_element(item)
+        self.wait_element(term=item, scrap_type=enum.ScrapType.MIXED, optional_term=".tfolder.twidget")
         self.rota = "ClickFolder"
+        
         is_advpl = self.is_advpl()
         close_element = self.get_closing_button(is_advpl)
 
         if close_element:
             self.move_element(close_element) # Retira o ToolTip dos elementos focados.
+        
         if self.VldData():
-            print('time.sleep(3) - Linha 2099 - Após VldData')
-            time.sleep(3)
+            print('time.sleep(1) - Linha 2077 - Após VldData')
+            time.sleep(1)
             try:#Tento pegar o elemento da aba de forma direta sem webscraping
-                element = self.driver.find_element_by_link_text(item)
+                element = self.driver.find_elements_by_link_text(item)
+                element = element[0]
             except:#caso contrário efetuo o clique na aba com webscraping    
                 Id = self.SetScrap(item, '', 'button-bar', 'abaenchoice')
                 if Id:
@@ -2431,7 +2434,7 @@ class CAWebHelper(unittest.TestCase):
                     result = True
         return result
 
-    def field_exists(self, term, scrap_type):
+    def field_exists(self, term, scrap_type, optional_term=None):
         if scrap_type == enum.ScrapType.TEXT:
             underline = (r'\w+(_)')
             match = re.search(underline, term)
@@ -2444,6 +2447,13 @@ class CAWebHelper(unittest.TestCase):
             return Ret
         elif scrap_type == enum.ScrapType.CSS_SELECTOR:
             return self.element_exists(By.CSS_SELECTOR, term)
+        elif scrap_type == enum.ScrapType.XPATH:
+            return self.element_exists(By.XPATH, term)
+        elif scrap_type == enum.ScrapType.MIXED:
+            if optional_term:
+                return self.element_exists(by=By.CSS_SELECTOR, text=term , selector=optional_term)
+            else:
+                return False
         else:
             return False
 
@@ -2457,8 +2467,8 @@ class CAWebHelper(unittest.TestCase):
     def is_advpl(self):
         return self.element_exists(By.CSS_SELECTOR, "div.tbrowsebutton", text=self.language.cancel)      
 
-    def wait_element(self, term, scrap_type=enum.ScrapType.TEXT):
-        while not self.field_exists(term, scrap_type):
+    def wait_element(self, term, scrap_type=enum.ScrapType.TEXT, optional_term=None):
+        while not self.field_exists(term, scrap_type, optional_term):
             if self.consolelog:
                 print("Waiting...")
             print('time.sleep(3) 1338')

@@ -18,3 +18,4 @@ class ScrapType(Enum):
     CSS_SELECTOR = 3
     MIXED = 4
     SCRIPT = 5
+    XPATH = 6
