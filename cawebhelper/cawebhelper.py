@@ -2076,18 +2076,17 @@ class CAWebHelper(unittest.TestCase):
             self.move_element(close_element) # Retira o ToolTip dos elementos focados.      
 
         if self.VldData():
-            print('time.sleep(1) - Linha 2077 - Após VldData')
-            time.sleep(1)
+            print('time.sleep(2) - Linha 2077 - Após VldData')
+            time.sleep(2)
             try:#Tento pegar o elemento da aba de forma direta sem webscraping
-                element = self.driver.find_elements_by_link_text(item)
-                element = element[0]
+                element = self.driver.find_element_by_link_text(item)
             except:#caso contrário efetuo o clique na aba com webscraping    
                 Id = self.SetScrap(item, '', 'button-bar', 'abaenchoice')
                 if Id:
                     element = self.driver.find_element_by_id(Id)
-                    
-            self.scroll_to_element(element)#posiciona o scroll baseado na height do elemento a ser clicado.
-            self.Click(element)
+            if element:
+                self.scroll_to_element(element)#posiciona o scroll baseado na height do elemento a ser clicado.
+                self.Click(element)
     
     def ClickBox(self, fields, contents_list ):
         '''
