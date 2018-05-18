@@ -453,32 +453,44 @@ class CAWebHelper(unittest.TestCase):
         '''
         print('time.sleep(1)')
         time.sleep(1)#tempo de espera para cada verificação.
-               
+        struct_tables = []
+
         content = self.driver.page_source
         soup = BeautifulSoup(content,"html.parser")
+        soup = soup.select(".tmodaldialog")
+        soup = self.zindex_sort(soup,True)[0] # Select a last modaldialog
+        
+        grids = soup.find_all('div', class_=(['tgetdados','tgrid','tcbrowse']))
 
-        grid = soup.find_all('div', class_=(['tgetdados','tgrid','tcbrowse']))
+        if grids:
+            if len(grids) > 1:
+                grids = self.filter_displayed_elements(grids,False)
+            else:
+                grids = self.filter_displayed_elements(grids,True)
 
-        if grid:
-            grid = self.filter_displayed_elements(grid)[0]
-            if grid:
-                self.current_table = grid
-                divstring = str(grid)
-                soup = BeautifulSoup(divstring,"html.parser") 
-                rows = []
-                xlabel = ''
+            self.current_tables = grids
 
-                for tr in soup.find_all('tr'):
-                    cols = []
-                    for th_td in tr.find_all(['td', 'th']):
-                        th_td_text = th_td.get_text(strip=True)
-                        cols.append(th_td_text)
-                        xlabel = th_td.name
-                    if xlabel == 'td':
-                        rows[len(rows)-1][1].append(cols)
-                    else:
-                        rows.append([cols,[]])
-            return rows    
+            for grid in grids:
+                if grid:
+                    divstring = str(grid)
+                    soup = BeautifulSoup(divstring,"html.parser") 
+                    rows = []
+                    xlabel = ''
+
+                    for tr in soup.find_all('tr'):
+                        cols = []
+                        for th_td in tr.find_all(['td', 'th']):
+                            th_td_text = th_td.get_text(strip=True)
+                            cols.append(th_td_text)
+                            xlabel = th_td.name
+                        if xlabel == 'td':
+                            rows[len(rows)-1][1].append(cols)
+                        else:
+                            rows.append([cols,[]])
+                    
+                    struct_tables.append(rows)
+                    rows = []
+            return struct_tables    
 
     def SetScrap(self, seek='', tag='', cClass='', args1='', args2='', args3=0, args4='', args5=60, searchMsg=True):
         '''
@@ -616,7 +628,7 @@ class CAWebHelper(unittest.TestCase):
         if not lista and not RetId:
             lista = soup.find_all(tag)
 
-        lista = self.zindex_sort(lista,True)
+        #lista = self.zindex_sort(lista,True)
 
         for line in lista:
             try:#faço uma tentativa pois caso não esteja verificando o mesmo nivel pode dar erro.
@@ -1340,7 +1352,7 @@ class CAWebHelper(unittest.TestCase):
 
             exceptions = ['wt alias', 'wt recno', 'alias wt', 'recno wt']
             lExcept = False
-            auxTable = self.SetTable()
+            auxTable = self.SetTable()[0]
             self.Table = []
 
             #Separa somente o alias das tabelas sem repetir
@@ -1438,7 +1450,7 @@ class CAWebHelper(unittest.TestCase):
         try:
             # O scraping abaixo eh necessário para comparar se o que eu digitei no processo anterior, esta realmente preenchido na celula do grid.
             tipoCpo = self.Table[2][coluna]
-            auxTable = self.SetTable()
+            auxTable = self.SetTable()[0]
             valorweb = auxTable[self.index][1][self.lineGrid][coluna]
 
             if self.SearchStack('GetValue'):
@@ -2088,12 +2100,13 @@ class CAWebHelper(unittest.TestCase):
                 self.scroll_to_element(element)#posiciona o scroll baseado na height do elemento a ser clicado.
                 self.Click(element)
     
-    def ClickBox(self, fields, contents_list ):
+    def ClickBox(self, fields, contents_list, browse_index=1 ):
         '''
         Method that clicks in checkbox
         '''
         contents_list = contents_list.split(",")
         fields = fields.split(",")
+        browse_index -= 1
 
         if contents_list == 'Todos':
             self.wait_element('Inverte Selecao') # wait Inverte Seleção
@@ -2110,25 +2123,13 @@ class CAWebHelper(unittest.TestCase):
                 self.wait_element(line) # wait columns
                 break
                 
-            table_struct = self.SetTable() # Alimenta variavel  self.current_table 
-            while not table_struct:
-                print("Esperando table")    
-                table_struct = self.SetTable()
-                       
-            grid = self.current_table 
+            table_structs = self.SetTable()
+            table_struct = table_structs[browse_index] # Pega o browse valido na tela
+            grid = self.current_tables[browse_index]
+            
             class_grid = grid.attrs['class'][0]
-            tables = self.driver.find_elements(By.CSS_SELECTOR, "." + class_grid)
+            grid = self.driver.find_element_by_xpath(xpath_soup(grid))
 
-            zindex = 0
-            grid_id = ""
-            for tab in tables:
-                zindex_atual = int(tab.get_attribute("style").split("z-index:")[1].split(";")[0].strip())
-                if zindex < zindex_atual:
-                    zindex = zindex_atual
-                    grid_id = tab.get_attribute("Id")
-            
-            grid = self.driver.find_element(By.ID, grid_id)
-            
             for line in contents_list:
                 for x in range(0, len(table_struct)):
                     for index, y in enumerate(table_struct[x][1]):
@@ -2145,7 +2146,7 @@ class CAWebHelper(unittest.TestCase):
                             else:
                                 self.SendKeys(elements_list[index], Keys.ENTER)
                             break
-        self.current_table = ''
+        self.current_tables = ''
 
     def SetParameters( self, arrayParameters ):
         '''
