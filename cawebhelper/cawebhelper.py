@@ -317,8 +317,8 @@ class CAWebHelper(unittest.TestCase):
                         time.sleep(2)
                         self.select_combo(Id, valor)
                     else:
-                        print('time.sleep(1)')
-                        time.sleep(1)
+                        print('time.sleep(2)')
+                        time.sleep(2)
                         self.DoubleClick(element)
                         if self.valtype != 'N':
                             self.SendKeys(element, Keys.DELETE)
@@ -342,8 +342,8 @@ class CAWebHelper(unittest.TestCase):
                         else:
                             self.SendKeys(element, valor)
                         
-                        print('time.sleep(2)')
-                        time.sleep(2)
+                        print('time.sleep(3)')
+                        time.sleep(3)
 
                         if tam_valorusr < tam_interface:
                             self.SendKeys(element, Keys.ENTER)
@@ -628,7 +628,7 @@ class CAWebHelper(unittest.TestCase):
         if not lista and not RetId:
             lista = soup.find_all(tag)
 
-        #lista = self.zindex_sort(lista,True)
+        lista = self.zindex_sort(lista,True)
 
         for line in lista:
             try:#faço uma tentativa pois caso não esteja verificando o mesmo nivel pode dar erro.
