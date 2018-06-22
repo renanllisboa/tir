@@ -1894,7 +1894,8 @@ class CAWebHelper(unittest.TestCase):
 
             for element in elements:
                 if text.strip().lower() in element.text.strip().lower():
-                    return True
+                    return self.driver.find_element_by_xpath(xpath_soup(element)).is_displayed()
+
             return False
 
     def SetLateralMenu(self, menuitens):
