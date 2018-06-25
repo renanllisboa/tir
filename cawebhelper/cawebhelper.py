@@ -494,7 +494,7 @@ class CAWebHelper(unittest.TestCase):
                     rows = []
             return struct_tables
 
-    def SetScrap(self, seek='', tag='', cClass='', args1='', args2='', args3=0, args4='', args5=60, searchMsg=True):
+    def SetScrap(self, seek='', tag='', cClass='', args1='', args2='', args3=0, args4='', args5=60, searchMsg=True, position=None):
         '''
         Método responsável pelo retorno do ID utilizando WebScraping
         '''
@@ -598,10 +598,11 @@ class CAWebHelper(unittest.TestCase):
 
         return(RetId)
 
-    def cabutton(self, seek, soup, tag, cClass, args1, args2):
+    def cabutton(self, seek, soup, tag, cClass, args1, args2, position=None):
         '''
         identifica botoes
         '''
+        buttons = [] 
         lista = []
         RetId = ''
         tooltipId = ''
@@ -630,7 +631,10 @@ class CAWebHelper(unittest.TestCase):
         if not lista and not RetId:
             lista = soup.find_all(tag)
 
-        lista = self.zindex_sort(lista,True)
+        if position is None:
+            lista = self.zindex_sort(lista, True)
+        else:
+            lista = self.zindex_sort(lista, False)
 
         for line in lista:
             try:#faço uma tentativa pois caso não esteja verificando o mesmo nivel pode dar erro.
@@ -649,7 +653,7 @@ class CAWebHelper(unittest.TestCase):
                         if seek == self.language.other_actions:
                             if args1 == 'SearchBrowse':
                                 self.teste = True
-                        break
+                        buttons.append(RetId)
                 '''
                 if tooltipState == False and cClass == 'tbrowsebutton' and line.attrs['class'][0] == 'tbutton' and line.text == '':
                     tooltipId = self.SetButtonTooltip( seek, soup, tag, cClass )
@@ -671,9 +675,14 @@ class CAWebHelper(unittest.TestCase):
             if args1 == 'abaenchoice':
                 if seek == line.text:
                     RetId = line.attrs['id']
-                    break
+                    buttons.append(RetId)
 
-        return(RetId)
+        if position is None and buttons:
+            return buttons[0]
+        elif buttons:
+            return buttons[position]
+        else:
+            return RetId
 
     def SetButtonTooltip(self, seek, soup, tag, cClass):
         '''
@@ -2022,11 +2031,13 @@ class CAWebHelper(unittest.TestCase):
 
         self.SetButton(self.language.close)
 
-    def SetButton(self, button, args1='wait', args2='', args3=60, tag='div', cClass='tbrowsebutton',searchMsg = True):
+    def SetButton(self, button, args1='wait', args2='', args3=60, tag='div', cClass='tbrowsebutton',searchMsg = True, position=None):
         '''
         Método que efetua o clique nos botão da interface
         '''
         try:
+            if position is not None:
+                position-=1
             Id  = ''
             if (button.lower() == "x"):
                 self.wait_element(term=".ui-button.ui-dialog-titlebar-close[title='Close']", scrap_type=enum.ScrapType.CSS_SELECTOR)
@@ -2037,7 +2048,7 @@ class CAWebHelper(unittest.TestCase):
                # time.sleep(2)
 
                 if (button.lower() == self.language.Ok.lower()) and args1 != 'startParameters':
-                    Id = self.SetScrap(button, tag, '', 'btnok')
+                    Id = self.SetScrap(button, tag, '', 'btnok', position=position)
                     if Id:
                         element = self.driver.find_element_by_id(Id)
                         self.Click(element)
@@ -2049,11 +2060,11 @@ class CAWebHelper(unittest.TestCase):
                     self.Click(element)
                 else:
                     if button in self.language.no_actions:
-                        Id = self.SetScrap(button, tag, cClass, '', '', '', '', args3, searchMsg)
+                        Id = self.SetScrap(button, tag, cClass, '', '', '', '', args3, searchMsg, position=position)
                     else:
-                        Id = self.SetScrap(button, tag, cClass, args1, '', '', '', args3, searchMsg)
+                        Id = self.SetScrap(button, tag, cClass, args1, '', '', '', args3, searchMsg, position=position)
                         if not Id:
-                            Id = self.SetScrap(self.language.other_actions, tag, cClass, args1,'', '', '', args3,searchMsg)
+                            Id = self.SetScrap(self.language.other_actions, tag, cClass, args1,'', '', '', args3,searchMsg, position=position)
                             element = self.driver.find_element_by_id(Id)
                             self.Click(element)
                             if Id:
@@ -2076,7 +2087,7 @@ class CAWebHelper(unittest.TestCase):
                             self.browse = False
                             if args1 != '' and args1 != 'wait':#se for botão incluir com subitens
                                 self.advpl = False
-                                Id = self.SetScrap(args1, 'li', 'tmenupopupitem')
+                                Id = self.SetScrap(args1, 'li', 'tmenupopupitem', position=position)
                                 if Id:
                                     element = self.driver.find_element_by_id(Id)
                                     self.Click(element)
@@ -2223,7 +2234,9 @@ class CAWebHelper(unittest.TestCase):
                             if class_grid != 'tcbrowse':
                                 print('time.sleep(1)')
                                 time.sleep(1)
-                                self.DoubleClick(elements_list[index])
+                                self.set_selenium_focus(elements_list[index])
+                                #self.DoubleClick(elements_list[index])
+                                ActionChains(self.driver).move_to_element(elements_list[index]).double_click().perform()
                                 print('time.sleep(2)')
                                 time.sleep(1)
                             else:
