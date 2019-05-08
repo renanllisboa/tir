@@ -10,9 +10,14 @@ These classes will contain only calls to the Internal classes.
 class Webapp():
     """
     Instantiates the Webapp automated interface testing class.
+
+    :param config_path: The path to the config file. - **Default:** "" (empty string)
+    :type config_path: str
+    :param autostart: Sets whether TIR should open browser and execute from the start. - **Default:** True
+    :type: bool
     """
-    def __init__(self, config_path=""):
-        self.__webapp = WebappInternal()
+    def __init__(self, config_path="", autostart=True):
+        self.__webapp = WebappInternal(config_path, autostart)
 
     def AddParameter(self, parameter, branch, portuguese_value="", english_value="", spanish_value=""):
         """
@@ -62,19 +67,28 @@ class Webapp():
         """
         self.__webapp.AssertTrue()
 
-    def ChangeEnvironment(self):
+    def ChangeEnvironment(self, date="", group="", branch="", module=""):
         """
         Clicks on the change environment area of Protheus Webapp and
-        fills the environment screen with the values passed on the Setup method.
+        fills the environment screen.
+
+        :param date: The date to fill on the environment screen. - **Default:** "" (empty string)
+        :type date: str
+        :param group: The group to fill on the environment screen. - **Default:** "" (empty string)
+        :type group: str
+        :param branch: The branch to fill on the environment screen. - **Default:** "" (empty string)
+        :type branch: str
+        :param module: The module to fill on the environment screen. - **Default:** "" (empty string)
+        :type module: str
 
         Usage:
 
         >>> # Calling the method:
-        >>> oHelper.ChangeEnvironment()
+        >>> oHelper.ChangeEnvironment(date="13/11/2018", group="T1", branch="D MG 01 ")
         """
-        self.__webapp.ChangeEnvironment()
+        self.__webapp.ChangeEnvironment(date, group, branch, module)
 
-    def CheckResult(self, field, user_value, grid=False, line=1, grid_number=1):
+    def CheckResult(self, field, user_value, grid=False, line=1, grid_number=1, name_attr=False):
         """
         Checks if a field has the value the user expects.
 
@@ -88,6 +102,8 @@ class Webapp():
         :type line: int
         :param grid_number: Grid number of which grid should be checked when there are multiple grids on the same screen. - **Default:** 1
         :type grid_number: int
+        :param name_attr: Boolean if search by Name attribute must be forced. - **Default:** False
+        :type name_attr: bool
 
         Usage:
 
@@ -102,7 +118,7 @@ class Webapp():
         >>> oHelper.CheckResult("Order", "000001", grid=True, line=1, grid_number=2)
         >>> oHelper.LoadGrid()
         """
-        self.__webapp.CheckResult(field, user_value, grid, line, grid_number)
+        self.__webapp.CheckResult(field, user_value, grid, line, grid_number, name_attr)
 
     def CheckView(self, text, element_type="help"):
         """
@@ -122,7 +138,7 @@ class Webapp():
         """
         self.__webapp.CheckView(text, element_type)
 
-    def ClickBox(self, fields, contents_list="", select_all=False, browse_index=1):
+    def ClickBox(self, fields, contents_list="", select_all=False, grid_number=1):
         """
         Clicks on Checkbox elements of a grid.
 
@@ -146,7 +162,7 @@ class Webapp():
         >>> # Calling the method to select all checkboxes:
         >>> oHelper.ClickBox("Branch", select_all=True)
         """
-        self.__webapp.ClickBox(fields, contents_list, select_all, browse_index)
+        self.__webapp.ClickBox(fields, contents_list, select_all, grid_number)
 
     def ClickFolder(self, item):
         """
@@ -195,7 +211,21 @@ class Webapp():
         """
         self.__webapp.ClickIcon(icon_text)
 
-    def GetValue(self, cabitem, field):
+    def ClickLabel(self, label_name):
+        """
+        Clicks on a Label on the screen.
+
+        :param label_name: The label name
+        :type label_name: str
+
+        Usage:
+
+        >>> # Call the method:
+        >>> oHelper.ClickLabel("Search")
+        """
+        self.__webapp.ClickLabel(label_name)
+
+    def GetValue(self, field, grid=False, line=1, grid_number=1):
         """
         Gets the current value or text of element.
 
@@ -213,7 +243,7 @@ class Webapp():
         >>> # Calling the method:
         >>> current_value = oHelper.GetValue("A1_COD")
         """
-        return self.__webapp.GetValue(cabitem, field)
+        return self.__webapp.GetValue(field, grid, line, grid_number)
 
     def LoadGrid(self):
         """
@@ -263,6 +293,9 @@ class Webapp():
         """
         Method that sets the program in the initial menu search field.
 
+        .. note::
+            Only used when the Initial Program is the module Ex: SIGAFAT.
+
         :param program_name: The program name
         :type program_name: str
 
@@ -286,7 +319,74 @@ class Webapp():
         """
         self.__webapp.RestoreParameters()
 
-    def SearchBrowse(self, term, key_description=None, identifier=None):
+    def ScrollGrid(self, column, match_value, grid_number=1):
+        """
+        Scrolls Grid until a matching column is found.
+
+        :param field: The column to be matched.
+        :type field: str
+        :param match_value: The value to be matched in defined column.
+        :type match_value: str
+        :param grid_number: Which grid should be used when there are multiple grids on the same screen. - **Default:** 1
+        :type grid_number: int
+
+        Usage:
+
+        >>> # Calling the method to scroll to a column match:
+        >>> oHelper.ScrollGrid(column="Branch",match_value="D MG 01 ")
+        >>> #--------------------------------------------------
+        >>> # Calling the method to scroll to a column match of the second grid:
+        >>> oHelper.ScrollGrid(column="Branch", match_value="D MG 01 ", grid_number=2)
+        """
+        self.__webapp.ScrollGrid(column, match_value, grid_number)
+
+    def Screenshot(self, filename):
+        """
+        Takes a screenshot and saves on the screenshot folder defined in config.
+
+        :param filename: The name of the screenshot file.
+        :type: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.Screenshot(filename="myscreenshot")
+        """
+        self.__webapp.take_screenshot(filename)
+
+    def F3(self, field, name_attr=False,send_key=False):
+        """
+        This method is similar to ClickIcon
+        1.Clicks on the Selenium element.
+
+        [Internal]
+        Do the standard query(F3) 
+        this method 
+        1.Search the field
+        2.Search icon "lookup"
+        3.Click()
+
+        :param term: The term that must be searched.
+        :type  term: str
+        :param name_attr: True: searchs element by name
+        :type  name_attr: bool
+        :param send_key: True: try open standard search field send key F3 
+        :type bool
+        
+        Usage:
+
+        >>> # To search using a label name:
+        >>> oHelper.F3("Cód")
+        >>> #------------------------------------------------------------------------
+        >>> # To search using the name of input:
+        >>> oHelper.F3(field='A1_EST',name_attr=True)
+        >>> #------------------------------------------------------------------------
+        >>> # To search using the name of input and do action with a key:
+        >>> oHelper.F3(field='A1_EST',name_attr=True,send_key=True)
+        """
+        self.__webapp.standard_search_field( field, name_attr, send_key )
+
+    def SearchBrowse(self, term, key=None, identifier=None, index=False):
         """
         Searchs a term on Protheus Webapp.
 
@@ -302,6 +402,8 @@ class Webapp():
         :type key: str
         :param identifier: The identifier of the search box. If none is provided, it defaults to the first of the screen. - **Default:** None
         :type identifier: str
+        :param index: Whether the key is an index or not. - **Default:** False
+        :type index: bool
 
         Usage:
 
@@ -316,8 +418,12 @@ class Webapp():
         >>> #------------------------------------------------------------------------
         >>> # To search using a chosen search box and a chosen search key:
         >>> oHelper.SearchBrowse("D MG 001", key="Branch+id", identifier="Products")
+        >>> oHelper.SearchBrowse("D MG 001", identifier="Products")
+        >>> #------------------------------------------------------------------------
+        >>> # To search using an index instead of name for the search key:
+        >>> oHelper.SearchBrowse("D MG 001", key=2, index=True)
         """
-        self.__webapp.SearchBrowse(term, key_description, identifier)
+        self.__webapp.SearchBrowse(term, key, identifier, index)
 
     def SetBranch(self, branch):
         """
@@ -333,7 +439,7 @@ class Webapp():
         """
         self.__webapp.SetBranch(branch)
 
-    def SetButton(self, button, sub_item=""):
+    def SetButton(self, button, sub_item="", position=1):
         """
         Method that clicks on a button on the screen.
 
@@ -341,6 +447,8 @@ class Webapp():
         :type button: str
         :param sub_item: Sub item to be clicked inside the first button. - **Default:** "" (empty string)
         :type sub_item: str
+        :param position: Position which element is located. - **Default:** 1
+        :type position: int
 
         Usage:
 
@@ -350,7 +458,7 @@ class Webapp():
         >>> # Calling the method to click on a sub item inside a button.
         >>> oHelper.SetButton("Other Actions", "Process")
         """
-        self.__webapp.SetButton(button, sub_item)
+        self.__webapp.SetButton(button, sub_item, position)
 
     def SetFilePath(self, value):
         """
@@ -448,7 +556,7 @@ class Webapp():
         """
         self.__webapp.SetTabEDAPP(table_name)
 
-    def SetValue(self, field, value, grid=False, grid_number=1, ignore_case=True):
+    def SetValue(self, field, value, grid=False, grid_number=1, ignore_case=True, row=None, name_attr=False):
         """
         Sets value of an input element.
 
@@ -462,6 +570,10 @@ class Webapp():
         :type grid_number: int
         :param ignore_case: Boolean if case should be ignored or not. - **Default:** True
         :type ignore_case: bool
+        :param row: Row number that will be filled
+        :type row: int
+        :param name_attr: Boolean if search by Name attribute must be forced. - **Default:** False
+        :type name_attr: bool
 
         Usage:
 
@@ -472,11 +584,15 @@ class Webapp():
         >>> oHelper.SetValue("Client", "000001", grid=True)
         >>> oHelper.LoadGrid()
         >>> #-----------------------------------------
+        >>> # Calling method to checkbox value on a field that is a grid:
+        >>> oHelper.SetValue('Confirmado?', True, grid=True)
+        >>> oHelper.LoadGrid()
+        >>> #-----------------------------------------
         >>> # Calling method to input value on a field that is on the second grid of the screen:
         >>> oHelper.SetValue("Order", "000001", grid=True, grid_number=2)
         >>> oHelper.LoadGrid()
         """
-        self.__webapp.SetValue(field, value, grid, grid_number, ignore_case)
+        self.__webapp.SetValue(field, value, grid, grid_number, ignore_case, row, name_attr=name_attr)
 
     def Setup(self, initial_program,  date="", group="99", branch="01", module=""):
         """
@@ -500,49 +616,163 @@ class Webapp():
         """
         self.__webapp.Setup(initial_program, date, group, branch, module)
 
+    def SetTIRConfig(self, config_name, value):
+        """
+        Changes a value of a TIR internal config during runtime.
+
+        This could be useful for TestCases that must use a different set of configs
+        than the ones defined at **config.json**
+
+        Available configs:
+
+        - Url
+        - Environment
+        - User
+        - Password
+        - Language
+        - DebugLog
+        - TimeOut
+        - InitialProgram
+        - Routine
+        - Date
+        - Group
+        - Branch
+        - Module
+
+        :param config_name: The config to be changed.
+        :type config_name: str
+        :param value: The value that would be set.
+        :type value: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.SetTIRConfig(config_name="date", value="30/10/2018")
+        """
+        self.__webapp.SetTIRConfig(config_name, value)
+
+    def Start(self):
+        """
+        Opens the browser maximized and goes to defined URL.
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.Start()
+        """
+        self.__webapp.Start()
+
     def TearDown(self):
         """
         Closes the webdriver and ends the test case.
 
         Usage:
 
-        >>> #Instantiating the class
-        >>> inst.oHelper = Webapp()
         >>> #Calling the method
         >>> inst.oHelper.TearDown()
         """
         self.__webapp.TearDown()
 
-    def WaitUntil(self, itens):
+    def WaitFieldValue(self, field, expected_value):
         """
-        Search string that was sent and wait until condition is true
-        e.g. "Item1,Item2,Item3"
+        Wait until field has expected value.
+        Recommended for Trigger fields.
 
-        :param itens: List of itens that will hold the wait.
-        :type itens: str
+        :param field: The desired field.
+        :type field: str
+        :param expected_value: The expected value.
+        :type expected_value: str
+
+        Usage:
+
+        >>> # Calling method:
+        >>> self.WaitFieldValue("CN0_DESCRI", "MY DESCRIPTION")
+        """
+        self.__webapp.WaitFieldValue(field, expected_value)
+
+    def WaitHide(self, string):
+        """
+        Search string that was sent and wait hide the elements.
+
+        :param itens: String that will hold the wait.
+        :type string: str
 
         Usage:
 
         >>> # Calling the method:
-        >>> oHelper.WaitUntil("Processing")
+        >>> oHelper.WaitHide("Processing")
         """
-        self.__webapp.WaitUntil(itens)
+        self.__webapp.WaitHide(string)
 
-    def WaitWhile(self, itens):
+    def WaitProcessing(self, string):
         """
-        Search string that was sent and wait while condition is true
-        e.g. "Item1,Item2,Item3"
+        Uses WaitShow and WaitHide to Wait a Processing screen
 
-        :param itens: List of itens that will hold the wait.
-        :type itens: str
+        :param string: String that will hold the wait.
+        :type string: str
 
         Usage:
 
         >>> # Calling the method:
-        >>> oHelper.WaitWhile("Processing")
+        >>> oHelper.WaitProcessing("Processing")
         """
-        self.__webapp.WaitWhile(itens)
+        self.__webapp.WaitProcessing(string)
 
+    def WaitShow(self, string):
+        """
+        Search string that was sent and wait show the elements.
+
+        :param itens: String that will hold the wait.
+        :type string: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.WaitShow("Processing")
+        """
+        self.__webapp.WaitShow(string)
+
+    def ClickTree(self, treepath):
+        """
+        Clicks on TreeView component.
+
+        :param treepath: String that contains the access path for the item separate by ">" .
+        :type string: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.ClickTree("element 1 > element 2 > element 3")
+        """ 
+        self.__webapp.ClickTree(treepath)
+    
+    def GetText(self, string_left="", string_right=""):
+        """
+
+        This method returns a string from modal based on the string in the left or rigth position that you send on parameter.
+
+        If the string_left was filled then the right side content is return.
+
+        If the string_right was filled then the left side content is return.
+
+        If no parameter was filled so the full content is return.
+
+        :param string_left: String of the left side of content
+        :type str
+        :param string_right: String of the right side of content
+        :type str
+        :returns String content
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.GetText("string_left="Left Text", string_right="Right Text")
+        >>> oHelper.GetText("string_left="Left Text") 
+        >>> oHelper.GetText()
+        """
+
+        return self.__webapp.GetText(string_left, string_right)
+        
 class Apw():
 
     def __init__(self, config_path=""):
@@ -613,5 +843,4 @@ class Apw():
         self.__Apw.SetValue(campo, valor, grid, linha, chknewline, disabled)
 
     def WaitModal(self, text, opcao="title"):
-
         self.__Apw.WaitModal(text, opcao)

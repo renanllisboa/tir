@@ -6,6 +6,7 @@ import socket
 import sys
 import os
 import random
+import string
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
@@ -21,6 +22,7 @@ from tir.technologies.core.language import LanguagePack
 from tir.technologies.core.third_party.xpath_soup import xpath_soup
 from selenium.webdriver.firefox.options import Options as FirefoxOpt
 from selenium.webdriver.chrome.options import Options as ChromeOpt
+from selenium.common.exceptions import StaleElementReferenceException
 
 class Base(unittest.TestCase):
     """
@@ -33,6 +35,8 @@ class Base(unittest.TestCase):
 
     :param config_path: The path to the config file. - **Default:** "" (empty string)
     :type config_path: str
+    :param autostart: Sets whether TIR should open browser and execute from the start. - **Default:** True
+    :type: bool
 
     Usage:
 
@@ -43,7 +47,7 @@ class Base(unittest.TestCase):
     >>> def WebappInternal(Base):
     >>> def APWInternal(Base):
     """
-    def __init__(self, config_path=""):
+    def __init__(self, config_path="", autostart=True):
         """
         Definition of each global variable:
 
@@ -61,36 +65,24 @@ class Base(unittest.TestCase):
 
         wait: The global Selenium Wait defined to be used in the entire application.
         """
+        #Global Variables:
+
         if config_path == "":
             config_path = os.path.join(sys.path[0], r"config.json")
         self.config = ConfigLoader(config_path)
-
-        if self.config.browser.lower() == "firefox":
-            driver_path = os.path.join(os.path.dirname(__file__), r'drivers\\geckodriver.exe')
-            log_path = os.path.join(os.path.dirname(__file__), r'geckodriver.log')
-            options = FirefoxOpt()
-            options.set_headless(self.config.headless)
-            self.driver = webdriver.Firefox(firefox_options=options, executable_path=driver_path, log_path=log_path)
-        elif self.config.browser.lower() == "chrome":
-            driver_path = os.path.join(os.path.dirname(__file__), r'drivers\\chromedriver.exe')
-            options = ChromeOpt()
-            options.set_headless(self.config.headless)
-            self.driver = webdriver.Chrome(chrome_options=options, executable_path=driver_path)
-
-        self.driver.maximize_window()
-        self.driver.get(self.config.url)
-
-        #Global Variables:
-
-        self.wait = WebDriverWait(self.driver,5)
+        self.config.autostart = autostart
 
         self.language = LanguagePack(self.config.language) if self.config.language else ""
         self.log = Log(folder=self.config.log_folder)
         self.log.station = socket.gethostname()
+        self.log.user = os.getlogin()
 
         self.base_container = "body"
         self.errors = []
         self.config.log_file = False
+
+        if autostart:
+            self.Start()
 
 # Internal Methods
 
@@ -166,6 +158,9 @@ class Base(unittest.TestCase):
                 element.click()
             elif click_type == enum.ClickType.ACTIONCHAINS:
                 ActionChains(self.driver).move_to_element(element).click().perform()
+        except StaleElementReferenceException:
+            print("********Element Stale click*********")
+            pass
         except Exception as error:
             self.log_error(str(error))
 
@@ -406,7 +401,11 @@ class Base(unittest.TestCase):
         >>> #Calling the method
         >>> text = self.get_element_text(element())
         """
-        return self.driver.execute_script("return arguments[0].innerText", element)
+        try:
+            return self.driver.execute_script("return arguments[0].innerText", element)
+        except StaleElementReferenceException:
+            print("********Element Stale get_element_text*********")
+            pass
 
     def get_element_value(self, element):
         """
@@ -427,7 +426,11 @@ class Base(unittest.TestCase):
         >>> #Calling the method
         >>> text = self.get_element_value(element())
         """
-        return self.driver.execute_script("return arguments[0].value", element)
+        try:
+            return self.driver.execute_script("return arguments[0].value", element)
+        except StaleElementReferenceException:
+            print("********Element Stale get_element_value*********")
+            pass
 
     def log_error(self, message, new_log_line=True):
         """
@@ -473,6 +476,66 @@ class Base(unittest.TestCase):
         """
         ActionChains(self.driver).move_to_element(element).perform()
 
+    def normalize_config_name(self, config_name):
+        """
+        [Internal]
+
+        Normalizes the config name string to respect the config object
+        naming convention.
+
+        :param config_name: The config name string to be normalized.
+        :type config_name: str
+        :return: The config name string normalized.
+        :rtype: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> normalized_name = self.normalize_config_name("InitialProgram") # "initial_program"
+        """
+        name_letters = list(map(lambda x: x, config_name))
+        capitalized = list(filter(lambda x: x[1] in string.ascii_uppercase, enumerate(name_letters)))
+        normalized = ""
+        if len(capitalized) > 1:
+            words = []
+            for count in range(0, len(capitalized)):
+                if count + 1 < len(capitalized):
+                    word = "".join(name_letters[capitalized[count][0]:capitalized[count+1][0]])
+                else:
+                    word = "".join(name_letters[capitalized[count][0]:])
+                words.append(word.lower())
+            normalized = "_".join(words)
+        else:
+            normalized = config_name.lower()
+
+        return normalized
+
+    def take_screenshot(self, filename):
+        """
+        [Internal]
+
+        Takes a screenshot and saves on the screenshot folder defined in config.
+
+        :param filename: The name of the screenshot file.
+        :type: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> self.take_screenshot(filename="myscreenshot")
+        """
+        if not filename.endswith(".png"):
+            filename += ".png"
+
+        directory = self.config.screenshot_folder if self.config.screenshot_folder else os.path.join(os.getcwd(), "screenshot")
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        fullpath = os.path.join(directory, filename)
+
+        self.driver.save_screenshot(fullpath)
+
     def scroll_to_element(self, element):
         """
         [Internal]
@@ -489,10 +552,14 @@ class Base(unittest.TestCase):
         >>> #Calling the method
         >>> self.scroll_to_element(element())
         """
-        if element.get_attribute("id"):
-            self.driver.execute_script("return document.getElementById('{}').scrollIntoView();".format(element.get_attribute("id")))
-        else:
-            self.driver.execute_script("return arguments[0].scrollIntoView();", element)
+        try:
+            if element.get_attribute("id"):
+                self.driver.execute_script("return document.getElementById('{}').scrollIntoView();".format(element.get_attribute("id")))
+            else:
+                self.driver.execute_script("return arguments[0].scrollIntoView();", element)
+        except StaleElementReferenceException:
+            print("********Element Stale scroll_to_element*********")
+            pass
 
     def search_zindex(self,element):
         """
@@ -609,8 +676,32 @@ class Base(unittest.TestCase):
         >>> element = lambda: self.driver.find_element_by_id("example_id")
         >>> #Calling the method
         >>> text = self.set_element_focus(element())
+        """   
+        try:
+            self.driver.execute_script("window.focus(); arguments[0].focus();", element)
+        except StaleElementReferenceException:
+            print("********Element Stale set_element_focus*********")
+            pass
+    
+
+    def soup_to_selenium(self, soup_object):
         """
-        self.driver.execute_script("window.focus(); arguments[0].focus();", element)
+        [Internal]
+
+        An abstraction of the Selenium call to simplify the conversion of elements.
+
+        :param soup_object: The BeautifulSoup object to be converted.
+        :type soup_object: BeautifulSoup object
+
+        :return: The object converted to a Selenium object.
+        :rtype: Selenium object
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> selenium_obj = lambda: self.soup_to_selenium(bs_obj)
+        """
+        return self.driver.find_element_by_xpath(xpath_soup(soup_object))
 
     def web_scrap(self, term, scrap_type=enum.ScrapType.TEXT, optional_term=None, label=False, main_container=None):
         """
@@ -719,7 +810,7 @@ class Base(unittest.TestCase):
         Usage:
 
         >>> #Calling the method
-        >>> self.AssertFalse()
+        >>> oHelper.AssertFalse()
         """
         self.assert_result(False)
 
@@ -730,9 +821,72 @@ class Base(unittest.TestCase):
         Usage:
 
         >>> #Calling the method
-        >>> self.AssertTrue()
+        >>> oHelper.AssertTrue()
         """
         self.assert_result(True)
+
+    def SetTIRConfig(self, config_name, value):
+        """
+        Changes a value of a TIR internal config during runtime.
+
+        This could be useful for TestCases that must use a different set of configs
+        than the ones defined at **config.json**
+
+        Available configs:
+
+        - Url - str
+        - Environment - str
+        - User - str
+        - Password - str
+        - Language - str
+        - DebugLog - str
+        - TimeOut - int
+        - InitialProgram - str
+        - Routine - str
+        - Date - str
+        - Group - str
+        - Branch - str
+        - Module - str
+
+        :param config_name: The config to be changed.
+        :type config_name: str
+        :param value: The value that would be set.
+        :type value: str
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.SetTIRConfig(config_name="date", value="30/10/2018")
+        """
+        print(f"Setting config: {config_name} = {value}")
+        normalized_config = self.normalize_config_name(config_name)
+        setattr(self.config, normalized_config, value)
+
+    def Start(self):
+        """
+        Opens the browser maximized and goes to defined URL.
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> oHelper.Start()
+        """
+        print("Starting the browser")
+        if self.config.browser.lower() == "firefox":
+            driver_path = os.path.join(os.path.dirname(__file__), r'drivers\\geckodriver.exe')
+            log_path = os.path.join(os.path.dirname(__file__), r'geckodriver.log')
+            options = FirefoxOpt()
+            options.set_headless(self.config.headless)
+            self.driver = webdriver.Firefox(firefox_options=options, executable_path=driver_path, log_path=log_path)
+        elif self.config.browser.lower() == "chrome":
+            driver_path = os.path.join(os.path.dirname(__file__), r'drivers\\chromedriver.exe')
+            options = ChromeOpt()
+            options.set_headless(self.config.headless)
+            self.driver = webdriver.Chrome(chrome_options=options, executable_path=driver_path)
+
+        self.driver.maximize_window()
+        self.driver.get(self.config.url)
+        self.wait = WebDriverWait(self.driver,5)
 
     def TearDown(self):
         """
@@ -741,6 +895,6 @@ class Base(unittest.TestCase):
         Usage:
 
         >>> #Calling the method
-        >>> self.TearDown()
+        >>> oHelper.TearDown()
         """
         self.driver.close()

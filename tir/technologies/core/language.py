@@ -53,6 +53,8 @@ class LanguagePack:
         self.search_by = languagepack["Search By"]
         self.From = languagepack["From"]
         self.To = languagepack["To"]
+        self.coins = languagepack["Coins"]
+        self.next = languagepack["Next"]
 
         self.messages = Messages(languagepack)
     def get_language_pack(self, language):
@@ -112,7 +114,9 @@ class LanguagePack:
             "Search 2": "Search",
             "Search By": "Search by:",
             "From": "From",
-            "To": "To"
+            "To": "To",
+            "Coins": "Coins",
+            "Next": "Next >>" 
         }
 
         brazilian_portuguese = {
@@ -170,7 +174,68 @@ class LanguagePack:
             "Search 2": "Buscar",
             "Search By": "Procurar por:",
             "From": "De",
-            "To": "Ate"
+            "To": "Ate",
+            "Coins": "Moedas",
+            "Next": "Avançar >>"
+        }
+        spanish = {
+            "User": "Usuário",
+            "Password": "Senha",
+            "Database": "Fecha base",
+            "Group": "Grupo",
+            "Branch": "Sucursal",
+            "Environment": "Entorno",
+            "Add": "Incluir",
+            "Delete": "Excluir",
+            "Edit": "Editar",
+            "Editar": "Editar", #usado num elemento especifico por conta do ambiente russo
+            "Cancel": "Anular",
+            "View": "Visualizar",
+            "Visualizar": "Visualizar", #usado num elemento especifico por conta do ambiente russo
+            "Other Actions": "Otras Acciones",
+            "Confirm": "Confirmar",
+            "Save": "Grabar",
+            "Close": "Finalizar",
+            "Exit": "Sair",
+            "Leave Page": "Sair da página",
+            "Enter": "Entrar",
+            "Finish": "Terminar",
+            "Details": "Detalhes",
+            "Search": "Buscar",
+            "Ok": "Ok",
+            "Copy": "Copiar",
+            "Cut": "Recortar",
+            "Paste": "Colar",
+            "Calculator": "Calculadora",
+            "Spool": "Spool",
+            "Folders": 'Pastas',
+            "Generate Differential File": "Gerar Arquivo Diferencial",
+            "Include": "Incluir",
+            "Filter": "Filtrar",
+			"Menu About": "Ayuda > Sobre",
+            "Error Log": "SMARTCLIENT encontrou um problema durante a execucao e sera finalizado. Para informacoes adicionais clique em detalhes",
+            "Error Log Print": "SMARTCLIENT encontrou um problema durante a execucao e sera finalizado. Para informacoes adicionais verifique print efetuado da tela",
+            "Error Msg Required": "Não é possível completar a ação. Existem campos obrigatórios não preenchidos.",
+            "Help": "Ajuda:",
+            "Problem": "Problema:",
+            "Solution": "Solução:",
+            "Branches": "Filiais",
+            "Grid Steps Misuse": "Uso de grid errado. Passe apenas um grupo de inputs ou um grupo de checks em cada bloco de grid.",
+            "Grid Steps Empty": "Nenhum passo de grid encontrado. Passe um grupo de inputs ou um grupo de checks em cada bloco de grid.",
+            "Grid Line Error": "Linha não existe na grid atual.",
+            "Grid Column Error": "Coluna não existe na grid atual.",
+            "Grid Number Error": "Não existe essa quantidade de grids na tela atual.",
+            "Text Not Found": "Texto não encontrado.",
+            "User Not Authenticated": "Usuário não autenticado",
+            "Change Environment": "Trocar módulo",
+            "Invert Selection": "Inverte Seleção",
+            "Parameter Menu": "Entorno > Archivos > Parametros",
+            "Search 2": "Buscar",
+            "Search By": "Buscar:",
+            "From": "De",
+            "To": "Ate",
+            "Coins": "Monedas",
+            "Next": "Avançar >>"
         }
         russian = {
             "User": "Пользователь",
@@ -230,7 +295,11 @@ class LanguagePack:
             "Invert Selection": "Invert Selection",
             "Parameter Menu": "Environment > Registers > Parameters",
             "Search 2": "Search",
-            "Search By": "Search by:"
+            "Search By": "Search by:",
+            "From": "De",
+            "To": "Ate",
+            "Coins": "Monedas",
+            "Next": "Avançar >>"
         }
 
         if language.lower() == "en-us":
@@ -239,6 +308,8 @@ class LanguagePack:
             return brazilian_portuguese
         elif language.lower() == "ru-ru":
             return russian
+        elif language.lower() == "es-es":
+            return spanish
         else:
             return brazilian_portuguese
 
