@@ -3687,12 +3687,20 @@ class PouiInternal(Base):
                 table = self.return_table(selector=term, table_number=table_number)
 
                 if table:
+                    headers = self.get_headers_from_grids(table)
                     # Get column index if click_cell is specified
                     if click_cell:
                         try:
-                            column_index_number = df.columns.get_loc(click_cell)
-                        except KeyError:
-                            logger().warning(f"Column '{click_cell}' not found for click_cell")
+                            # Get the column index from headers
+                            click_cell_lower = click_cell.lower().strip()
+                            if headers and len(headers) > 0:
+                                header_dict = headers[0]  # Get first (and usually only) header dict
+                                if click_cell_lower in header_dict:
+                                    column_index_number = header_dict[click_cell_lower]
+                                else:
+                                    logger().warning(f"Column '{click_cell}' not found for click_cell")
+                        except (KeyError, IndexError) as e:
+                            logger().warning(f"Error getting column index for '{click_cell}': {str(e)}")
 
                     # Build filter conditions
                     if columns_list and values_list:
