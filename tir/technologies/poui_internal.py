@@ -3748,6 +3748,7 @@ class PouiInternal(Base):
             element_bs4 = next(iter(tr[index].select('td')))
             self.poui_click(element_bs4)
 
+
     def _normalize_to_list(self, value) -> list:
         """
         [Internal]
