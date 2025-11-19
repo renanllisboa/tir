@@ -26,6 +26,7 @@ from datetime import datetime
 from tir.technologies.core.logging_config import logger
 import pathlib
 import json
+from typing import List
 
 def count_time(func):
     """
@@ -98,6 +99,9 @@ class PouiInternal(Base):
         self.used_ids = {}
         self.tss = False
         self.restart_coverage = True
+        self.grid_selectors= {
+            "grid_containers": "po-table, kendo-grid"
+        }
 
         self.parameters = []
         self.backup_parameters = []
@@ -1928,40 +1932,63 @@ class PouiInternal(Base):
         else:
             self.log_error(f"Element {string} not found")
 
-    def WaitShow(self, string, timeout=None, throw_error = True):
+    def WaitShow(self, string: str, timeout: int = None, throw_error: bool = True, contains: bool = True) -> bool:
         """
         Search string that was sent and wait show the elements.
 
         :param string: String that will hold the wait.
         :type string: str
+        :param timeout: Maximum time to wait in seconds. Default is 1200.
+        :type timeout: int
+        :param throw_error: Whether to raise an error if element is not found. Default is True.
+        :type throw_error: bool
+        :param contains: If True, matches partial text. If False, requires exact match. Default is True.
+        :type contains: bool
+        :return: True if element is found and displayed, False otherwise (only if throw_error is False).
+        :rtype: bool
 
         Usage:
 
         >>> # Calling the method:
         >>> oHelper.WaitShow("Processing")
+        >>> # With exact match:
+        >>> oHelper.WaitShow("Processing", contains=False)
         """
         logger().info(f"Waiting show text '{string}'...")
 
-        if not timeout:
-            timeout = 1200
+        timeout = timeout if timeout else 1200
 
-        endtime = time.time() + timeout
-        while(time.time() < endtime):
+        endtime = time.time() + timeout        
+        while time.time() < endtime:
+            container = self.get_current_container()
 
-            element = None
+            # Quick check: verify if string exists in the entire DOM text (case-insensitive)
+            if container and string.lower() in container.text.lower():
+                
+                # Find all elements containing the search string (case-insensitive)
+                elements = [
+                    node.parent
+                    for node in container.find_all(string=re.compile(re.escape(string), re.IGNORECASE))
+                ]
+                
+                elements = list(filter(lambda x: self.element_is_displayed(x), elements))
 
-            element = self.web_scrap(term=string, scrap_type=enum.ScrapType.MIXED, optional_term="po-loading-overlay, span, .po-modal-title", main_container = self.containers_selectors["AllContainers"], check_help=False)
+                # If exact match is required, filter further
+                if not contains:
+                    elements = list(filter(lambda x: string.strip().lower() == x.text.strip().lower(), elements))
 
-            if element:
-                return element
+                if elements:
+                    return True
 
-            if endtime - time.time() < 1180:
-                time.sleep(0.5)
+                if endtime - time.time() < 1180:
+                    time.sleep(0.5)
 
-        if not throw_error:
-            return False
-        else:
+        logger().warning(f"Element '{string}' not found within {timeout} seconds.")
+        
+        if throw_error:
             self.log_error(f"Element {string} not found")
+        
+        return False
 
     def WaitProcessing(self, itens, timeout=None):
         """
@@ -3160,12 +3187,11 @@ class PouiInternal(Base):
         """
 
         grid_number -= 1
-        
-        self.wait_element(term=".tgetdados tbody tr, .tgrid tbody tr, .tcbrowse",
-                          scrap_type=enum.ScrapType.CSS_SELECTOR)
+
         grid = self.get_grid(grid_number, grid_element)
 
         return grid.select('tbody tr')
+
 
     def LengthGridLines(self, grid):
         """
@@ -3373,7 +3399,14 @@ class PouiInternal(Base):
             self.log_error(f"Couldn't set {field}. Please check it")
 
 
-    def poui_click(self, element):
+    def poui_click(self, element, click_type=1):
+        """
+        POUI Click method
+        :param element:
+        :param click_type: ClickType enum. 1-3 types- **Default:** 1
+        :type click_type: int
+        :return:
+        """
 
         self.switch_to_iframe()
         click_element = lambda: self.soup_to_selenium(element)
@@ -3383,13 +3416,14 @@ class PouiInternal(Base):
         self.set_element_focus(click_element())
         self.wait_until_to(expected_condition="element_to_be_clickable", element=element, locator=By.XPATH)
         time.sleep(1)
-        self.click(click_element())
+        self.click(click_element(), click_type=enum.ClickType(click_type))
 
     def click_button(self, button, position, selector, container):
         """
 
         :param field: Button to be clicked.
         :param position: Position which element is located. - **Default:** 1
+
 
         """
         position -= 1
@@ -3563,131 +3597,320 @@ class PouiInternal(Base):
 
 
     def ClickTable(self, first_column, second_column, first_content, second_content, table_number, itens, click_cell,
-                   checkbox, radio_input):
+                   checkbox, radio_input, columns=None, values=None, match_all=False):
         """
-        Clicks on the Table of POUI component.
-        https://po-ui.io/documentation/po-table
+            Clicks on the Table of POUI component.
+            https://po-ui.io/documentation/po-table
 
-        :param first_column: Column name to be used as reference.
-        :type first_column: str
-        :param second_column: Column name to be used as reference.
-        :type second_column: str
-        :param first_content: Content of the column to be searched.
-        :type first_content: str
-        :param second_content: Content of the column to be searched.
-        :type second_content: str
-        :param table_number: Which grid should be used when there are multiple grids on the same screen. - **Default:** 1
-        :type table_number: int
-        :param itens: Bool parameter that click in all itens based in the field and content reference.
-        :type itens: bool
-        :param click_cell: Content to click based on a column position to close the axis
-        :type click_cell: str
-        :param checkbox: If you want to click on the checkbox component in the table
-        :type checkbox: bool
+            Supports both legacy and new syntax:
 
-        >>> # Call the method:
-        >>> oHelper.ClickTable(first_column='Código', first_content='000003', click_cell='Editar')
-        :return: None
-        """
+            **Legacy syntax (backward compatible):**
+            >>> oHelper.ClickTable("Code", "", "000001", "", click_cell="Edit")
+            >>> oHelper.ClickTable("Code", "Name", "000001", "John", click_cell="Edit")
+
+            **New syntax (recommended):**
+
+            >>> oHelper.ClickTable(columns='Code', values='000001', click_cell='Edit')
+            >>> oHelper.ClickTable(columns=['Code', 'Name'], values=['000001', 'John'], click_cell='Edit')
+
+            :param first_column: [LEGACY] First column name - **Default:** ""
+            :type first_column: str
+            :param second_column: [LEGACY] Second column name - **Default:** ""
+            :type second_column: str
+            :param first_content: [LEGACY] First column content - **Default:** ""
+            :type first_content: str
+            :param second_content: [LEGACY] Second column content - **Default:** ""
+            :type second_content: str
+            :param table_number: Grid position number when multiple grids exist - **Default:** 1
+            :type table_number: int
+            :param itens: [LEGACY] Click all items matching criteria - **Default:** False
+            :type itens: bool
+            :param click_cell: Column name to click - **Default:** ""
+            :type click_cell: str
+            :param checkbox: Click checkbox - **Default:** False
+            :type checkbox: bool
+            :param radio_input: Click radio button - **Default:** False
+            :type radio_input: bool
+            :param columns: [NEW] List of column names or comma-separated string - **Default:** None
+            :type columns: list or str
+            :param values: [NEW] List of values or comma-separated string - **Default:** None
+            :type values: list or str
+            :param match_all: [NEW] If True, click in all matching rows - **Default:** False
+            :type match_all: bool
+
+            Usage:
+
+            >>> # Legacy calls (still supported):
+            >>> oHelper.ClickTable("Branch", "", "D MG 01", "", click_cell="Edit")
+            >>> oHelper.ClickTable("Code", "Name", "000001", "John")
+            >>> oHelper.ClickTable("Code", "", "000001", "", itens=True)
+
+            >>> # New calls (recommended):
+            >>> oHelper.ClickTable(columns='Branch', values='D MG 01', click_cell='Edit')
+            >>> oHelper.ClickTable(columns=['Code', 'Name'], values=['000001', 'John'])
+            >>> oHelper.ClickTable(columns='Status', values=True, match_all=True, checkbox=True)
+
+            :return: None
+            """
         element = None
-        UNNAMED_COLUMN = 'Unnamed: 0'
 
         if not self.config.poui:
             self.twebview_context = True
 
-        index_number = []
+        # Detect if using legacy syntax
+        using_legacy = bool(first_column or second_column or first_content or second_content)
+        using_new = bool(columns is not None or values is not None)
+
+        # Cannot mix syntaxes
+        if using_legacy and using_new:
+            self.log_error(
+                "Cannot mix legacy parameters (first_column, second_column, etc.) with new syntax (columns, values)")
+            return
+
+        # Convert legacy to new format
+        if using_legacy:
+            columns_list = []
+            values_list = []
+            if first_column and first_column.startswith('unnamed'):
+                first_column = ''
+
+            if first_column and first_content:
+                columns_list.append(first_column)
+                values_list.append(first_content)
+
+            if second_column and second_content:
+                columns_list.append(second_column)
+                values_list.append(second_content)
+
+            # Use itens parameter for legacy
+            if itens:
+                match_all = True
+
+            logger().warning(
+                "Deprecation: legacy parameters (first_column, second_column, first_content, second_content, itens)"
+                " will be removed in a future version. Please use 'columns' and 'values'."
+                " Applied conversion -> Columns: %s, Values: %s",
+                columns_list, values_list)
+        else:
+            # Normalize new syntax to lists
+            columns_list = self._normalize_to_list(columns)
+            values_list = self._normalize_to_list(values)
+
+        row_index_number = []
         count = 0
         column_index_number = None
-        term = "[class='po-table'], po-table"
-        logger().info(f"Clicking on Table")
+        term = "[class='po-table'], po-table, kendo-grid"
+        filter_info = dict(zip(columns_list, values_list)) if columns_list else {}
+        logger().info(f"Clicking on Row with filters: {filter_info}")
         self.wait_element(term=term)
 
         endtime = time.time() + self.config.time_out
-        while time.time() < endtime and len(index_number) < 1 and count <= 3:
+        while time.time() < endtime and len(row_index_number) < 1 and count <= 3:
 
             try:
                 table = self.return_table(selector=term, table_number=table_number)
 
-                df = self.data_frame(object=table)
-
-                last_df = df
-
-                if not df.empty:
+                if table:
+                    headers = self.get_headers_from_grids(table)
+                    # Get column index if click_cell is specified
                     if click_cell:
-                        column_index_number = df.columns.get_loc(click_cell)
+                        try:
+                            # Get the column index from headers
+                            click_cell_lower = click_cell.lower().strip()
+                            if headers and len(headers) > 0:
+                                header_dict = headers[0]  # Get first (and usually only) header dict
+                                if click_cell_lower in header_dict:
+                                    column_index_number = header_dict[click_cell_lower]
+                                else:
+                                    logger().warning(f"Column '{click_cell}' not found for click_cell")
+                        except (KeyError, IndexError) as e:
+                            logger().warning(f"Error getting column index for '{click_cell}': {str(e)}")
 
-                    if first_column and second_column and first_column != UNNAMED_COLUMN:
-                        index_number = df.loc[(df[first_column] == first_content) & (df[second_column] == second_content)].index.array
-                    elif first_column and (first_content and second_content):
-                        index_number = df.loc[(df[first_column[0]] == first_content) | (df[first_column[0]] == second_content)].index.array
-                    elif itens:
-                        index_number = df.loc[(df[first_column] == first_content)].index.array
-                    elif first_column and first_content:
-                        first_column = next(iter(list(filter(lambda x: first_column.lower().strip() in x.lower().strip(), df.columns))))
-                        first_column_values = df[first_column].values
-                        first_column_formatted_values = list(map(lambda x: x.replace(' ', ''), first_column_values))
-                        content = next(iter(list(filter(lambda x: x == first_content.replace(' ', ''), first_column_formatted_values))), None)
-                        if content:
-                            index_number.append(first_column_formatted_values.index(content))
-                            if len(index_number) > 0:
-                                index_number = [index_number[0]]
-                    elif first_column and second_column and second_content:
-                        second_column = next(iter(list(filter(lambda x: second_column.lower().strip() in x.lower().strip(), df.columns))), None)
-                        second_column_values = df[second_column].values
-                        second_column_formatted_values = list(map(lambda x: x.replace(' ', ''), second_column_values))
-                        content = next(iter(list(filter(lambda x: x == second_content.replace(' ', ''), second_column_formatted_values))), None)
-                        if content:
-                            index_number.append(second_column_formatted_values.index(content))
-                            if len(index_number) > 0:
-                                index_number = [index_number[0]]
+                    # Build filter conditions
+                    if columns_list and values_list:
+                        row_index_number = self._find_row_by_content(table, columns_list, values_list, match_all)
                     else:
-                        index_number.append(0)
-
-                    if len(index_number) < 1 and count <= 3:
-                        first_element_focus = table.select('th')[column_index_number]
-                        if first_element_focus:
-                            self.wait_until_to(expected_condition="element_to_be_clickable",
-                                               element=first_element_focus, locator=By.XPATH)
-                            self.soup_to_selenium(first_element_focus).click()
-                        ActionChains(self.driver).key_down(Keys.PAGE_DOWN).perform()
-                        table = self.return_table(selector=term, table_number=table_number)
-                        df = self.data_frame(object=table)
-                        if df.equals(last_df):
-                            count += 1
+                        # No filters, select first row
+                        row_index_number.append(0)
 
             except Exception as e:
                 self.log_error(f"Content doesn't found on the screen! {str(e)}")
 
-        if len(index_number) < 1:
-            self.log_error(f"Content doesn't found on the screen! {first_content}")
+        if len(row_index_number) < 1:
+            self.log_error(f"Content doesn't found on the screen with filters: {filter_info}")
 
         tr = table.select('tbody > tr')
 
-        if hasattr(index_number, '__iter__'):
-            for index in index_number:
-                if checkbox:
-                    self.click_table_checkbox(selector=term, index=index, table_number=table_number)
+        if hasattr(row_index_number, '__iter__'):
+            for index in row_index_number:
+                if checkbox is not None:
+                    self.click_table_checkbox(table_number, row_index=index, checkbox_value=checkbox)
                 elif radio_input:
                     row_radio_component = tr[index].select_one('po-radio')
                     if row_radio_component:
                         self.toggle_radio(row_radio_component, radio_input)
                 else:
                     if column_index_number:
-                        element_bs4 = tr[index].select('td')[column_index_number].select('span')[0]
+                        element_bs4 = tr[index].select('td')[column_index_number].select_one('span')
 
                     else:
                         element_bs4 = next(iter(tr[index].select('td')))
-                        if first_column == UNNAMED_COLUMN:
-                            clickable_spans = tr[index].select('td')[0].select('.po-clickable')
+                        if click_cell is None:
+                            clickable_spans = tr[index].select_one('td')
                             if clickable_spans:
-                                element_bs4 = clickable_spans[0]
+                                icon = clickable_spans.select_one('.po-clickable')
+                                if icon:
+                                    element_bs4 = icon
                             else:
                                 self.log_error("No clickable spans found in the table row.")
                     self.poui_click(element_bs4)
         else:
-            index = index_number
+            index = row_index_number
             element_bs4 = next(iter(tr[index].select('td')))
             self.poui_click(element_bs4)
+
+    def _normalize_to_list(self, value):
+        """
+        [Internal]
+        Normalize input to list format.
+
+        :param value: Can be None, string (comma-separated), or list
+        :return: List or empty list
+        """
+        if value is None:
+            return []
+
+        if isinstance(value, list):
+            return value
+
+        # Single value, convert to list
+        return [str(value)]
+
+
+    def _find_row_by_content(self, grid, columns, values, match_all=False, grid_number=0):
+        """
+        [Internal]
+        Filter table rows based on column-value pairs and return matching indices.
+
+        :param grid: BeautifulSoup grid to filter
+        :param columns: List of column names
+        :param values: List of values to match
+        :param match_all: If True, return all matches. If False, return first match only
+        :return: List of matching row indices
+        """
+
+        # Start with all rows as True
+
+        col_indices_match = []
+        matching_row_indices = []
+        UNNAMED_COLUMN = 'unnamed'
+        headers = self.get_headers_from_grids(grid)
+
+        normalized_values = list(map(lambda x: x.lower().strip(), values))
+        columns_numbers = []
+
+        if columns:
+            expected_columns = [x.lower().strip() for x in columns]
+            expected_columns = ['' if x.startswith(UNNAMED_COLUMN) else x for x in expected_columns]
+            difference = list(filter(lambda x: x not in list(headers[grid_number].keys()), expected_columns))
+            columns_numbers = list(map(lambda x: headers[grid_number][x], expected_columns))
+
+            if difference:
+                logger.warning(f"Columns '{difference}' not found in table")
+                return
+
+        grid_rows = grid.select('tbody tr')
+
+        for row in grid_rows:
+            row_columns = row.select('td')
+
+            if len(row_columns) < len(columns) or not row_columns:
+                self.log_error(f"There are not number of columns present in the grid")
+                return
+
+            filtered_columns = [row_columns[x] for x in columns_numbers] if columns_numbers else row_columns
+            if filtered_columns:
+                filtered_cells = list(
+                    filter(lambda x: x[1].text.lower().strip() == normalized_values[x[0]], enumerate(filtered_columns)))
+
+                if len(filtered_cells) == len(normalized_values):
+                    matching_row_indices.append(grid_rows.index(row))
+                    if not match_all:
+                        return matching_row_indices
+
+
+    def _find_matching_column(self, grid_headers, column_name):
+        """
+        [Internal]
+        Find column by name (case-insensitive, partial match).
+
+        :param df: DataFrame
+        :param column_name: Column name to search
+        :return: Matched column name or None
+        """
+        normalized_search = column_name.lower().strip()
+        if normalized_search in grid_headers:
+            return grid_headers[normalized_search]
+        return None
+
+
+    def get_headers_from_grids(self, grids, column_name='', position=0):
+        """
+        [Internal]
+
+        Returns a Dict with the headers and their indexes of each grid in *grids* parameter.
+
+        :param grids: The grids to extract the headers.
+        :type grids: List of BeautifulSoup objects
+
+        :return: List of Dictionaries with each header value and index.
+        :rtype: List of Dict
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> headers = self.get_headers_from_grids(grids)
+        """
+
+        headers = []
+        labels = None
+        index = []
+        labels_list= []
+        headers_term = "thead tr th"
+
+        if isinstance(grids, list):
+            for item in grids:
+                labels = item.select(headers_term)
+                if labels:
+                    keys = list(map(lambda x: x.text.strip().lower(), labels))
+                    labels_list.append(keys)
+                    values = list(map(lambda x: x[0], enumerate(labels)))
+                    headers.append(dict(zip(keys, values)))
+
+        else:
+            labels = grids.select(headers_term)
+            if labels:
+                keys = list(map(lambda x: x.text.strip().lower(), labels))
+                labels_list.append(keys)
+                values = list(map(lambda x: x[0], enumerate(labels)))
+                headers.append(dict(zip(keys, values)))
+
+        if column_name or column_name == '':
+            duplicated_key = column_name.lower()
+            duplicated_value = position-1 if position > 0 else 0
+
+            for labels in labels_list:
+                for idx, value in enumerate(labels):
+                    if value == duplicated_key:
+                        index.append(idx)
+                if len(index) > 1:
+                    for header in headers:
+                        if duplicated_key in header:
+                            header[duplicated_key] = index[duplicated_value]
+                index = []
+
+        return headers
+
 
     def toggle_radio(self, po_radio, active=True):
         '''Set input Radio from a tr Tag element
@@ -3730,26 +3953,62 @@ class PouiInternal(Base):
         return False
 
 
-    def click_table_checkbox(self, selector, index, table_number):
+    def click_table_checkbox(self, table_position, row_index, checkbox_value=True, checkbox_position=1):
 
-        checked = False
+        checkbox_position -= 1
+        is_checked = False
+        table_checkbox_term = "po-checkbox, kendo-checkbox"
 
         endtime = time.time() + self.config.time_out
-        while time.time() < endtime and not checked:
-            table = self.return_table(selector=selector, table_number=table_number)
-
+        while time.time() < endtime and not is_checked:
+            table = self.return_table(selector=self.grid_selectors["grid_containers"], table_number=table_position)
             tr = table.select('tbody > tr')
+            columns = tr[row_index].select('td')
+            checkbox_columns = [col for col in columns if col.select_one(table_checkbox_term)]
+            if len(checkbox_columns) > checkbox_position:
+                checkbox = checkbox_columns[checkbox_position].select_one(table_checkbox_term)
+                if checkbox:
+                    is_checked = self.checkbox_is_checked(checkbox)
+                    check_icon = checkbox.select_one('span, input')
 
-            checkbox = next(iter(tr[index].select("[name='checkbox']")), None)
+                    # Click only if current state is different from desired state
+                    if check_icon and is_checked != checkbox_value:
+                        logger().debug(f"Clicking checkbox at row {row_index + 1}.")
+                        self.poui_click(check_icon)
+                        time.sleep(1)
 
-            if checkbox:
-                element = checkbox.select('span')[0]
 
-                if 'checked' in checkbox.contents[0].attrs:
-                    checked = 'true' in checkbox.contents[0].attrs['checked']
+    def checkbox_is_checked(self, checkbox_element):
+        """
+        Verifica se o checkbox está marcado em componentes POUI ou Kendo Grid.
 
-            if not checked:
-                self.poui_click(element)
+        :param checkbox_element: Elemento BeautifulSoup4 do checkbox
+        :type checkbox_element: bs4.element.Tag
+        :return: True se o checkbox estiver marcado, False caso contrário
+        :rtype: bool
+
+        Usage:
+
+        >>> # Calling the method:
+        >>> is_checked = self.checkbox_is_checked(checkbox_element)
+        """
+
+        # Verifica se é um po-checkbox (POUI)
+        span = checkbox_element.select_one('span')
+        if span:
+            span_sl = self.soup_to_selenium(span, twebview=True)
+            if span_sl.get_attribute('aria-checked') is not None:
+                return 'true' in span_sl.get_attribute('aria-checked')
+
+        # Verifica pela célula da tabela (Kendo Grid)
+        td_cell = checkbox_element.find_parent('td')
+        if td_cell:
+            td_cell_sl = self.soup_to_selenium(td_cell, twebview=True)
+            if td_cell_sl.get_attribute('aria-selected') is not None:
+                return 'true' in td_cell_sl.get_attribute('aria-selected')
+
+        return None
+
 
     def return_table(self, selector, table_number):
 
@@ -3764,7 +4023,9 @@ class PouiInternal(Base):
         
         if tables:
             if len(tables) - 1 >= table_number:
+                self.scroll_to_element(self.soup_to_selenium(tables[table_number], twebview=True))
                 return tables[table_number]
+
 
     def data_frame(self, object):
         '''Return a DataFrame from a Beautiful Soup Table
@@ -3781,6 +4042,7 @@ class PouiInternal(Base):
 
         if not df.empty:
             return df.fillna('Not Value')
+
 
     def POTabs(self, label):
         """
