@@ -3728,6 +3728,9 @@ class PouiInternal(Base):
 
                     # Build filter conditions
                     if columns_list and values_list:
+                        if len(columns_list) != len(values_list):
+                            self.log_error(f"Number of columns ({len(columns_list)}) must match number of values ({len(values_list)})")
+                            return
                         row_index_number = self._find_row_by_content(table, columns_list, values_list, match_all)
                     else:
                         # No filters, select first row
@@ -3769,7 +3772,8 @@ class PouiInternal(Base):
             element_bs4 = next(iter(tr[index].select('td')))
             self.poui_click(element_bs4)
 
-    def _normalize_to_list(self, value):
+
+    def _normalize_to_list(self, value) -> list:
         """
         [Internal]
         Normalize input to list format.
