@@ -1,6 +1,9 @@
-# TIR - Totvs Interface Robot
 
-TIR is a Python module used to create test scripts for web interfaces. With it, you are able to easily create and execute test suites and test cases for any supported Totvs' web interface systems, such as Protheus Webapp.
+# TIR - Test Interface Robot
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/totvs/tir)
+![Python Version](https://img.shields.io/pypi/pyversions/tir-framework)
+
+TIR is a Python module used to create test scripts for web interfaces. With it, you can easily create and execute test suites and test cases for any supported web interface systems, such as Protheus Webapp.
 
 ### Current Supported Technologies
 
@@ -13,6 +16,7 @@ TIR is a Python module used to create test scripts for web interfaces. With it, 
 [Installation](#installation)<br>
 [Config](#config)<br>
 [Usage](#usage)<br>
+[Docker](#docker)<br>
 [Samples](#samples)<br>
 [Contact Us](#contact)<br>
 [Contributing](#contributing)
@@ -20,31 +24,31 @@ TIR is a Python module used to create test scripts for web interfaces. With it, 
 ## Documentation
 Our documentation can be found here:
 
-- [TIR Documentation](https://totvs.github.io/tir/)
+- [TIR Documentation](https://totvs.github.io/tir-docs/)
+
+- [TIR Technical Documentation](https://totvs.github.io/tir/)
 
 This project has a docs folder with [Sphinx](http://www.sphinx-doc.org/en/master/) files.
 
-Our **create_docs.cmd** script handles the installation of dependencies and creates the offline documentation on doc_files/build/html folder.
+Our **create_docs.cmd** script handles the installation of dependencies and creates the offline documentation on the doc_files/build/html folder.
 
 ## Installation
 
-The installation is pretty simple. All you need as a requirement is Python 3.6 or greater and a browser (Mozilla Firefox/Google Chrome) installed in your system.
+The installation is pretty simple. All you need as a requirement is Python 3.12 (Mozilla Firefox) installed in your system.
 
-There are two ways of installing TIR:
+There are three ways of installing TIR:
 
-### 1. via Installation Wizard
+### 1. Installing and Upgrade from PyPI
 
-Our installation wizard handles the environment setup, the package installation and also it can update your package.
+TIR can be installed via pip from [Pypi](https://pypi.org/project/tir-framework/)
 
-Download [TIR Installer](https://github.com/totvs/tir-installer/blob/master/tir-installer%201.0.0.exe?raw=true)
+```shell
+pip install tir_framework --upgrade
+```
 
-It is also an open-source project, you can see the repository [here](https://github.com/totvs/tir-installer/)
+### 2. via Terminal(Deprecated For The Branch Master)
 
-OBS: Our installation wizard will install our package in the current active Python instance. If you're willing to use Python's virtual environment in your machine, please be sure that the virtual environment is active before installing our package.
-
-### 2. via Terminal
-
-You can install TIR via terminal. Make sure your Python is installed and run this command:
+You can install TIR via the terminal. Make sure your Python and Git are installed and run this command:
 
 ```shell
 pip install git+https://github.com/totvs/tir.git --upgrade
@@ -66,6 +70,7 @@ Here you can find all the supported keys: [Config.json keys](https://totvs.githu
 
 Just pass the path as a parameter in your script:
 
+#### Protheus WebApp Class example:
 ```python
 #To use a custom path for your config.json
 test_helper = Webapp("C:\PATH_HERE\config.json")
@@ -73,22 +78,11 @@ test_helper = Webapp("C:\PATH_HERE\config.json")
 
 ## Usage
 
-After the module is installed, you could just import it on your Test Case.
+After the module is installed, you could just import it into your Test Case.
 See the following example:
 
-```python
-# Import from our package the class you're going to use
-from tir import Webapp
+[**Protheus WebApp Class**](https://totvs.github.io/tir-docs/TIR/first/)
 
-test_helper = Webapp()
-test_helper.Setup('SIGAGCT','10/08/2017','T1','D MG 01 ','05')
-test_helper.Program('CNTA010')
-
-test_helper.SetButton('Cancelar')
-test_helper.AssertTrue()
-
-test_helper.TearDown()
-```
 
 ## Samples
 
@@ -96,12 +90,60 @@ We have a repository with different samples of TIR scripts:
 
 [TIR Script Samples](https://github.com/totvs/tir-script-samples)
 
+
+# Utilizando TIR com ambiente virtual 
+
+## Conhecendo o conceito
+Para execução do TIR em ambiente virtual, utilizaremos a biblioteca **Virtualenv**. Essa é uma ferramenta usada em Python para criar ambientes **isolados**. Cada ambiente virtual tem seus próprios diretórios de instalação de pacotes, separados do ambiente **global** do sistema. Isso é útil para gerenciar dependências de **diferentes** projetos/versões sem conflito.
+
+## Configurando com VScode
+### Instalando a biblioteca e Criando o ambiente
+
+1. **Abra o terminal** (Prompt de Comando ou terminal do VS Code).
+2. **Instale o Virtualenv** com o seguinte comando:
+
+3.  **Crie o ambiente virtual** no diretório atual:
+```bash
+
+python -m virtualenv venv
+
+```
+>  **Observação:**
+> Se você tiver mais de uma versão do Python instalada, pode ser necessário especificar o caminho do executável desejado.
+> Exemplo:
+>
+> ```bash
+>  "C:/caminho/python/pythonXY/python.exe" -m pip install virtualenv
+>  "C:/caminho/python/pythonXY/python.exe" -m virtualenv venv
+> ```
+>
+> Por padrão, o Python costuma ser instalado em:
+>  `C:\Users\[seu_usuario]\AppData\Local\Programs\Python\Python[versão]`
+4. Após executar o comando, uma pasta chamada `venv` será criada no diretório atual.
+
+Esse é o seu ambiente virtual, pronto para uso!
+
+### Configurando o Vscode 
+Após a configuração do ambiente virtual iremos definir o interpretador do VScode para utiliza-lo
+1. Com o VScode aberto na pasta do projeto, pressione `Ctrl + Shift + P` e pesquise pela opção `>Python: Select Interpreter`
+
+2. Na lista de interpretadores reconhecidos no sistema, selecione o interpretador anteriormente criado, caminho padrão é:  **_./venv/Scripts/python.exe_** . Ao selecionar, o interpretador padrao utilizado se tornara esse, caso deseje utilizar outro é só seleciona-lo na lista.
+
+3. Abra um novo terminal no Vscode indo em _"Terminal"_ e _"Novo terminal"_
+
+4. Ao abrir o terminal veja se está inicializada a venv na linha de comando. ![venv](doc_files/source/img/terminal_venv.png)
+
+5. Agora rode o comando para instalação do TIR! `pip install tir_framework --no-cache-dir --force-reinstall --upgrade`
+
+7. Pronto! Agora seu tir esta pronto para executar em um ambiente isolado!.
+
+
 ## Contact
 
 [Gitter](https://gitter.im/totvs-tir/General)
 
 ## Contributing
 
-In order to contribute be sure to follow the [Contribution](CONTRIBUTING.md) guidelines.
+To contribute be sure to follow the [Contribution](CONTRIBUTING.md) guidelines.
 
-Also, it's import to understand the chosen [architecture](https://github.com/totvs/tir/blob/master/doc_files/ARCHITECTURE.md).
+Also, it's important to understand the chosen [architecture](https://github.com/totvs/tir/blob/master/doc_files/ARCHITECTURE.md).

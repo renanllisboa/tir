@@ -55,8 +55,42 @@ class LanguagePack:
         self.To = languagepack["To"]
         self.coins = languagepack["Coins"]
         self.next = languagepack["Next"]
-
+        self.logOff = languagepack["LogOff"]
+        self.checkhelp = languagepack["Checkhelp"]
+        self.checkproblem = languagepack["Checkproblem"]
+        self.checksolution = languagepack["Checksolution"]
+        self.change_password = languagepack["ChangePassword"]
+        self.user_login = languagepack["UserLogin"]
+        self.current_password = languagepack["CurrentPassword"]
+        self.nem_password = languagepack["NewPassword"]
+        self.confirm_new_password = languagepack["ConfirmNewPassword"]
+        self.yes = languagepack["Yes"]
+        self.assert_false_message = languagepack["AssertFalseMessage"]
+        self.file_name = languagepack["File Name"]
+        self.open = languagepack["Open"]
+        self.warning = languagepack["Warning"]
+        self.news = languagepack["News"]
+        self.continue_string = languagepack["Continue"]
+        self.shortconfirm = languagepack["Short Confirm"]
+        self.confirm_in_environment_screen = languagepack["Enter in environment screen"]
+        self.codecoverage = languagepack["Code Coverage"] #"Aguarde... Coletando informacoes de cobertura de codigo."
+        self.release = languagepack["Release"]
+        self.topdatabase = languagepack["Top DataBase"]
+        self.libversion = languagepack["Lib Version"]
+        self.build = languagepack["Build"]
+        self.issued = languagepack["Issued"]
+        self.ref_dt = languagepack["Ref.Dt"]
+        self.time = languagepack["Time"]
+        self.end_time = languagepack["End Time"]
+        self.procedure_menu = languagepack["Procedure Menu"]
+        self.code = languagepack["Code"]
+        self.success = languagepack["Success"]
+        self.procedure_install = languagepack["Procedure Install"]
+        self.procedure_uninstall = languagepack["Procedure Uninstall"]
+        self.schedule_menu = languagepack["Schedule Menu"]
+        
         self.messages = Messages(languagepack)
+
     def get_language_pack(self, language):
 
         english = {
@@ -107,6 +141,7 @@ class LanguagePack:
             "Grid Column Error": "Column does not exist in current grid.",
             "Grid Number Error": "There is not that many grids on the current screen.",
             "Text Not Found": "Text Not Found.",
+            "Help Not Found": "Help Not Found",
             "User Not Authenticated": "User Not Authenticated",
             "Change Environment": "Change environment",
             "Invert Selection": "Invert Selection",
@@ -116,7 +151,41 @@ class LanguagePack:
             "From": "From",
             "To": "To",
             "Coins": "Coins",
-            "Next": "Next >>" 
+            "Next": "Next >>",
+            "LogOff": "Log Off",
+            "Checkhelp": "Help:",
+            "Checkproblem": "Problem:",
+            "Checksolution": "Solution:",
+            "ChangePassword": "Reserved",
+            "UserLogin": "Reserved",
+            "CurrentPassword": "Reserved",
+            "NewPassword": "Reserved",
+            "ConfirmNewPassword": "Reserved",
+            "Yes": "Sim",
+            "AssertFalseMessage": "AssertFalse method used without a checkpoint, check the script.",
+            "File Name": "File Name",
+            "Open": "Open",
+            "Warning": "Warning",
+            "News": "News",
+            "Continue": "Continue",
+            "Short Confirm": "Confirm",
+            "Enter in environment screen": "Enter",
+            "Code Coverage": "Aguarde... Coletando informacoes de cobertura de codigo.",
+            "Release": "Release",
+            "Top DataBase": "Top DataBase",
+            "Lib Version": "Lib Version",
+            "Build": "Build",
+            "Issued": "Issued",
+            "Ref.Dt": "Ref.Dt",
+            "Time": "Time",
+            "End Time": "End Time",
+            "Procedure Menu": "Database > Dictionary > Stored Procedure",
+            "Code": "Code",
+            "Success": "Success",
+            "Procedure Install": "Install selected processes",
+            "Procedure Uninstall": "Remove selected processes",
+            "Schedule Menu": "Settings > Schedule > Schedule"
+            
         }
 
         brazilian_portuguese = {
@@ -167,6 +236,7 @@ class LanguagePack:
             "Grid Column Error": "Coluna não existe na grid atual.",
             "Grid Number Error": "Não existe essa quantidade de grids na tela atual.",
             "Text Not Found": "Texto não encontrado.",
+            "Help Not Found": "Help não encontrado.",
             "User Not Authenticated": "Usuário não autenticado",
             "Change Environment": "Trocar módulo",
             "Invert Selection": "Inverte Seleção",
@@ -176,7 +246,41 @@ class LanguagePack:
             "From": "De",
             "To": "Ate",
             "Coins": "Moedas",
-            "Next": "Avançar >>"
+            "Next": "Avançar >>",
+            "LogOff": "Log Off",
+            "Checkhelp": "Help:",
+            "Checkproblem": "Problema:",
+            "Checksolution": "Solução:",
+            "ChangePassword": "Alterar Senha",
+            "UserLogin": "Login do usuário",
+            "CurrentPassword": "Senha atual",
+            "NewPassword": "Nova senha",
+            "ConfirmNewPassword": "Confirmar nova senha",
+            "Yes": "Sim",
+            "AssertFalseMessage": "Método AssertFalse utilizado sem um ponto de verificação, verifique o script.",
+            "File Name": "Nome do Arquivo",
+			"Open": "Abrir",
+            "Warning": "Atenção",
+            "News": "Novidades do",
+            "Continue": "Continuar",
+            "Short Confirm": "Confirmar",
+            "Enter in environment screen": "Entrar",
+            "Code Coverage": "Aguarde... Coletando informacoes de cobertura de codigo.",
+            "Release": "Release",
+            "Top DataBase": "Top DataBase",
+            "Lib Version": "Versão da lib",
+            "Build": "Build",
+            "Issued": "Emissão",
+            "Ref.Dt": "DT.Ref.",
+            "Time": "Hora",
+            "End Time": "Hora Término",
+            "Procedure Menu": "Base de Dados > Dicionário > Stored Procedure",
+            "Code": "Código",
+            "Success": "Sucessos",
+            "Procedure Install": "Instalar processos selecionados",
+            "Procedure Uninstall": "Remover processos selecionados",
+            "Schedule Menu": "Ambiente > Schedule > Schedule"
+
         }
         spanish = {
             "User": "Usuário",
@@ -196,11 +300,11 @@ class LanguagePack:
             "Confirm": "Confirmar",
             "Save": "Grabar",
             "Close": "Finalizar",
-            "Exit": "Sair",
+            "Exit": "Salir",
             "Leave Page": "Sair da página",
             "Enter": "Entrar",
             "Finish": "Terminar",
-            "Details": "Detalhes",
+            "Details": "Detalles",
             "Search": "Buscar",
             "Ok": "Ok",
             "Copy": "Copiar",
@@ -226,6 +330,7 @@ class LanguagePack:
             "Grid Column Error": "Coluna não existe na grid atual.",
             "Grid Number Error": "Não existe essa quantidade de grids na tela atual.",
             "Text Not Found": "Texto não encontrado.",
+            "Help Not Found": "Help não encontrado.",
             "User Not Authenticated": "Usuário não autenticado",
             "Change Environment": "Trocar módulo",
             "Invert Selection": "Inverte Seleção",
@@ -235,16 +340,50 @@ class LanguagePack:
             "From": "De",
             "To": "Ate",
             "Coins": "Monedas",
-            "Next": "Avançar >>"
+            "Next": "Avançar >>",
+            "LogOff": "Log Off",
+            "Checkhelp": "Help:",
+            "Checkproblem": "Problema:",
+            "Checksolution": "Solucion:",
+            "ChangePassword": "Reserved",
+            "UserLogin": "Login del usuario*",
+            "CurrentPassword": "Contrasena actual*",
+            "NewPassword": "Nueva contrasena*",
+            "ConfirmNewPassword": "Confirmar nueva contrasena*",
+            "Yes":"Reserved",
+            "AssertFalseMessage": "Método AssertFalse utilizado sin un punto de control, verifique el script.",
+            "File Name": "Nome do Arquivo",
+			"Open": "Abierto",
+            "Warning": "Atención",
+            "News": "Noticias",
+            "Continue": "Continuar",
+            "Short Confirm": "Confirmar",
+            "Enter in environment screen": "Entrar",
+            "Code Coverage": "Aguarde... Coletando informacoes de cobertura de codigo.",
+            "Release": "Release",
+            "Top DataBase": "Top DataBase",
+            "Lib Version": "Versão da lib",
+            "Build": "Build",
+            "Issued": "Emision",
+            "Ref.Dt": "Fc.Ref.",
+            "Time": "Hora",
+            "End Time": "Hora Término",
+            "Procedure Menu": "Base de Dados > Dicionário > Stored Procedure",
+            "Code": "Código",
+            "Success": "Sucessos",
+            "Procedure Install": "Instalar processos selecionados",
+            "Procedure Uninstall": "Remover processos selecionados",
+            "Schedule Menu": "Entorno > Schedule > Schedule"
+
         }
         russian = {
             "User": "Пользователь",
             "Password": "Пароль",
-            "Database": "Дата",
+            "Database": "Базовая дата",
             "Group": "Группа",
             "Branch": "Филиал",
             "Environment": "Среда",
-            "Add": "Добавлять",
+            "Add": "Добавить",
             "Delete": "Удалить",
             "Edit": "редактировать",
             "Editar": "Изменить", #usado num elemento especifico por conta do ambiente russo
@@ -258,13 +397,10 @@ class LanguagePack:
             "Close": "Закрыть",
             "Exit": "Выход",
             "Leave Page": "Выйти без сохранения",
-            "Enter": "Ввод",
-            #"Finish": "Завершить",
-            "Finish": "3акрыть",
-            #"Details": "ДЕТАЛИ",
+            "Enter": "Войти",
+            "Finish": "Завершить",
             "Details": "Подробнее",
-            #"Search": "Поиск",
-            "Search": "Search",
+            "Search": "Поиск",
             "Ok": "Да",
             "Copy": "Copy",
             "Cut": "Cut",
@@ -272,6 +408,7 @@ class LanguagePack:
             "Calculator": "Calculator",
             "Spool": "Spool",
             "Help": "Help",
+            #"Help": "Помощь:",
             "Folders": "Folders",
             "Generate Differential File": "Создать файл изменений",
             "Include": "Bставить",
@@ -280,7 +417,6 @@ class LanguagePack:
             "Error Log": "SMARTCLIENT проблема обнаружена при работе системы, и она будет закрыта. Д/др. инфор-и нажать «Подробности»",
             "Error Log Print": "SMARTCLIENT проблема обнаружена при работе системы, и она будет закрыта.Для получения дополнительной информации проверьте распечатку экрана",
             "Error Msg Required": "Не удалось завершить это действие. Не заполнены обязательные поля.",
-            #"Help": "Помощь:",
             "Problem": "Проблема:",
             "Solution": "Решение:",
             "Branches": "",
@@ -290,16 +426,50 @@ class LanguagePack:
             "Grid Column Error": "Column does not exist in current grid.",
             "Grid Number Error": "There is not that many grids on the current screen.",
             "Text Not Found": "Text Not Found",
+            "Help Not Found": "Help Not Found",
             "User Not Authenticated": "User Not Authenticated",
             "Change Environment": "Change environment",
             "Invert Selection": "Invert Selection",
-            "Parameter Menu": "Environment > Registers > Parameters",
-            "Search 2": "Search",
-            "Search By": "Search by:",
+            "Parameter Menu": "Среда > НСИ > Параметры",
+            "Search 2": "оиск",
+            "Search By": "Поиск по:",
             "From": "De",
             "To": "Ate",
-            "Coins": "Monedas",
-            "Next": "Avançar >>"
+            "Coins": "Валюта",
+            "Next": "Далее >>",
+            "LogOff": "Завершить",
+            "Checkhelp": "Помощь:",
+            "Checkproblem": "Проблема:",
+            "Checksolution": "Решение:",
+            "ChangePassword": "Смена пароля",
+            "UserLogin": "Пользователь (логин)",
+            "CurrentPassword": "Текущий пароль*",
+            "NewPassword": "Нов. пароль*",
+            "ConfirmNewPassword": "Подтв. новый пароль*",
+            "File Name": "имя файла",
+			"Open": "открыто",
+            "Yes": "Да",
+            "AssertFalseMessage": "AssertFalse method used without a checkpoint, check the script.",
+            "Warning": "Берегись",
+            "News": "Новости",
+            "Continue": "Продолжить",
+            "Short Confirm": "Подтв.",
+            "Enter in environment screen": "Ввод",
+            "Code Coverage": "Aguarde... Coletando informacoes de cobertura de codigo.",
+            "Release": "Сброс RPO",
+            "Top DataBase": "БД",
+            "Lib Version": "Версия библиотеки",
+            "Build": "Верс.",
+            "Issued": "Issued",
+            "Ref.Dt": "Ref.Dt",
+            "Time": "Time",
+            "End Time": "End Time",
+            "Procedure Menu": "Database > Dictionary > Stored Procedure",
+            "Code": "Код",
+            "Success": "успех",
+            "Procedure Install": "Установить выбранные процессы",
+            "Procedure Uninstall": "Удалить выбранные процессы",
+            "Schedule Menu": "Settings > Schedule > Schedule"
         }
 
         if language.lower() == "en-us":
@@ -327,3 +497,4 @@ class Messages():
         self.error_msg_required = languagepack["Error Msg Required"]
         self.text_not_found = languagepack["Text Not Found"]
         self.user_not_authenticated = languagepack["User Not Authenticated"]
+        self.help_not_found = languagepack["Help Not Found"]
