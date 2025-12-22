@@ -83,3 +83,7 @@ jobs:
           echo "Registry: ${{ steps.clean.outputs.registry }}"
           echo "Project: ${{ inputs.harbor_project }}"
           echo "Version: ${{ inputs.release }}"
+          echo ""
+          echo "Full image names:"
+          echo "  - ${{ steps.clean.outputs.registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:${{ inputs.release }}"
+          echo "  - ${{ steps.clean.outputs.registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:latest"
