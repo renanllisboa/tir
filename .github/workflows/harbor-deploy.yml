@@ -41,43 +41,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Captura a versão da release gerada (ex.: refs/tags/v1.1.1 > 1.1.1)
-      - name: Set release version
-        run: |
-          if [ -n "${{ inputs.release }}" ]; then
-            echo "RELEASE_VERSION=${{ inputs.release }}" >> $GITHUB_ENV
-          else
-            VERSION=${GITHUB_REF#refs/*/v}
-            echo "RELEASE_VERSION=${VERSION}" >> $GITHUB_ENV
-          fi
-
-      # Define Harbor registry URL
-      - name: Set Harbor registry
-        run: |
-          REGISTRY="${{ inputs.harbor_registry }}"
-          if [ -z "$REGISTRY" ]; then
-            REGISTRY="${{ secrets.HARBOR_REGISTRY }}"
-          fi
-          echo "HARBOR_REGISTRY=${REGISTRY}" >> $GITHUB_ENV
-          echo "Harbor Registry: ${REGISTRY}"
-
-      # Define Harbor project
-      - name: Set Harbor project
-        run: |
-          PROJECT="${{ inputs.harbor_project }}"
-          if [ -z "$PROJECT" ]; then
-            PROJECT="tir"
-          fi
-          echo "HARBOR_PROJECT=${PROJECT}" >> $GITHUB_ENV
-          echo "Harbor Project: ${PROJECT}"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Harbor
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.HARBOR_REGISTRY }}
+          registry: ${{ inputs.harbor_registry }}
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
@@ -90,14 +60,14 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: |
-            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
-            ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:latest
+            ${{ inputs.harbor_registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:${{ inputs.release }}
+            ${{ inputs.harbor_registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Image pushed successfully
         run: |
           echo "Image pushed to Harbor successfully!"
-          echo "Tags:"
-          echo "  - ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}"
-          echo "  - ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:latest"
+          echo "Registry: ${{ inputs.harbor_registry }}"
+          echo "Project: ${{ inputs.harbor_project }}"
+          echo "Version: ${{ inputs.release }}"
