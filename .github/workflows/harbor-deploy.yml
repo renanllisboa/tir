@@ -44,29 +44,32 @@ jobs:
       # Captura a versão da release gerada (ex.: refs/tags/v1.1.1 > 1.1.1)
       - name: Set release version
         run: |
-          if [ -z "${{ inputs.release }}" ]; then
-            echo "RELEASE_VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
-          else
+          if [ -n "${{ inputs.release }}" ]; then
             echo "RELEASE_VERSION=${{ inputs.release }}" >> $GITHUB_ENV
+          else
+            VERSION=${GITHUB_REF#refs/*/v}
+            echo "RELEASE_VERSION=${VERSION}" >> $GITHUB_ENV
           fi
 
       # Define Harbor registry URL
       - name: Set Harbor registry
         run: |
-          if [ -z "${{ inputs.harbor_registry }}" ]; then
-            echo "HARBOR_REGISTRY=${{ secrets.HARBOR_REGISTRY }}" >> $GITHUB_ENV
-          else
-            echo "HARBOR_REGISTRY=${{ inputs.harbor_registry }}" >> $GITHUB_ENV
+          REGISTRY="${{ inputs.harbor_registry }}"
+          if [ -z "$REGISTRY" ]; then
+            REGISTRY="${{ secrets.HARBOR_REGISTRY }}"
           fi
+          echo "HARBOR_REGISTRY=${REGISTRY}" >> $GITHUB_ENV
+          echo "Harbor Registry: ${REGISTRY}"
 
       # Define Harbor project
       - name: Set Harbor project
         run: |
-          if [ -z "${{ inputs.harbor_project }}" ]; then
-            echo "HARBOR_PROJECT=tir" >> $GITHUB_ENV
-          else
-            echo "HARBOR_PROJECT=${{ inputs.harbor_project }}" >> $GITHUB_ENV
+          PROJECT="${{ inputs.harbor_project }}"
+          if [ -z "$PROJECT" ]; then
+            PROJECT="tir"
           fi
+          echo "HARBOR_PROJECT=${PROJECT}" >> $GITHUB_ENV
+          echo "Harbor Project: ${PROJECT}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
