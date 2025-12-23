@@ -32,3 +32,11 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  callHarbor:
+    needs: [deploy]
+    uses: ./.github/workflows/harbor-deploy.yml
+    secrets:
+      HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+      HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      HARBOR_REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
