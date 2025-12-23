@@ -3,6 +3,16 @@ name: Harbor Deploy
 on:
   # Permite execução disparada por outra pipeline
   workflow_call:
+    inputs:
+      release:
+        description: 'Set tag version (sem v)'
+        required: false
+        type: string
+      harbor_project:
+        description: 'Harbor project name'
+        required: false
+        type: string
+        default: 'tir'
     secrets:
       HARBOR_USERNAME:
         required: true
@@ -41,10 +51,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set version
+        id: version
+        run: |
+          if [ -n "${{ inputs.release }}" ]; then
+            echo "version=${{ inputs.release }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=${GITHUB_REF#refs/*/v}
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Clean Harbor registry URL
         id: clean
         run: |
           REGISTRY="${{ inputs.harbor_registry }}"
+          if [ -z "$REGISTRY" ]; then
+            REGISTRY="${{ secrets.HARBOR_REGISTRY }}"
+          fi
           # Remove https:// ou http://
           REGISTRY=${REGISTRY#https://}
           REGISTRY=${REGISTRY#http://}
@@ -52,6 +75,16 @@ jobs:
           REGISTRY=${REGISTRY%%/*}
           echo "registry=${REGISTRY}" >> $GITHUB_OUTPUT
           echo "Cleaned Registry: ${REGISTRY}"
+      
+      - name: Set Harbor project
+        id: project
+        run: |
+          PROJECT="${{ inputs.harbor_project }}"
+          if [ -z "$PROJECT" ]; then
+            PROJECT="tir"
+          fi
+          echo "name=${PROJECT}" >> $GITHUB_OUTPUT
+          echo "Harbor Project: ${PROJECT}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -72,8 +105,8 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: |
-            ${{ steps.clean.outputs.registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:${{ inputs.release }}
-            ${{ steps.clean.outputs.registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:latest
+            ${{ steps.clean.outputs.registry }}/${{ steps.project.outputs.name }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ steps.clean.outputs.registry }}/${{ steps.project.outputs.name }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -81,9 +114,9 @@ jobs:
         run: |
           echo "Image pushed to Harbor successfully!"
           echo "Registry: ${{ steps.clean.outputs.registry }}"
-          echo "Project: ${{ inputs.harbor_project }}"
-          echo "Version: ${{ inputs.release }}"
+          echo "Project: ${{ steps.project.outputs.name }}"
+          echo "Version: ${{ steps.version.outputs.version }}"
           echo ""
           echo "Full image names:"
-          echo "  - ${{ steps.clean.outputs.registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:${{ inputs.release }}"
-          echo "  - ${{ steps.clean.outputs.registry }}/${{ inputs.harbor_project }}/${{ env.IMAGE_NAME }}:latest"
+          echo "  - ${{ steps.clean.outputs.registry }}/${{ steps.project.outputs.name }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}"
+          echo "  - ${{ steps.clean.outputs.registry }}/${{ steps.project.outputs.name }}/${{ env.IMAGE_NAME }}:latest"
