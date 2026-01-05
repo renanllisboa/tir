@@ -104,6 +104,8 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
+          provenance: false
+          sbom: false
           tags: |
             ${{ steps.clean.outputs.registry }}/${{ steps.project.outputs.name }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
             ${{ steps.clean.outputs.registry }}/${{ steps.project.outputs.name }}/${{ env.IMAGE_NAME }}:latest
