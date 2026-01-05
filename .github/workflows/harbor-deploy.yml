@@ -75,7 +75,7 @@ jobs:
           REGISTRY=${REGISTRY%%/*}
           echo "registry=${REGISTRY}" >> $GITHUB_OUTPUT
           echo "Cleaned Registry: ${REGISTRY}"
-      
+
       - name: Set Harbor project
         id: project
         run: |
